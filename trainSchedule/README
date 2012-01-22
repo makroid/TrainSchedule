@@ -1,0 +1,8 @@
+TrainSchedule
+is a simple QT application for training monitoring.
+On each day of a week, sessions can be added. Typically, a session consists of a type (e.g. bike-session), 
+a duration and a distance. Optionally, the corresponding route can be visualized via google maps in a 
+pedometer-like interface.
+
+You need QT and QT's webkit installed for compilation.
+
