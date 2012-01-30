@@ -12,8 +12,9 @@ Distance::Distance(QXmlStreamReader &xmlReader) {
             break;
         }
         if (xmlReader.isStartElement()) {
-            if (xmlReader.name() == "dist") {
+            if (xmlReader.name() == "dist") {               
                 dist = xmlReader.readElementText().toDouble();
+                qDebug() << "reading dist=" << dist;
                 xmlReader.readNext();
             } else if (xmlReader.name() == "unit") {
                 QString u = xmlReader.readElementText();

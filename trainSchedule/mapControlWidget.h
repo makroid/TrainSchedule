@@ -21,6 +21,7 @@ public:
     QSize sizeHint() const { return minimumSizeHint(); }
     void reset();
     void setRecording();
+    void forwardModeRadioButton();
 
     int getCurrentRouteId() const { return currentRouteId; }
     void setCurrentRouteId(int crid) { currentRouteId = crid; }
@@ -29,7 +30,8 @@ private slots:
     void startNewRoute();
     void deleteRoute();
     void undoLastPoint();
-    void setClickModeAutomatic(bool);
+    void setClickModeRunnerAutomatic(bool);
+    void setClickModeBikerAutomatic(bool);
     void setClickModeManual(bool);
 
 private:
@@ -41,7 +43,8 @@ private:
     QPushButton *undoButton;
     QPushButton *deleteButton;
     QRadioButton *manualRadioButton;
-    QRadioButton *automaticRadioButton;
+    QRadioButton *runnerRadioButton;
+    QRadioButton *bikerRadioButton;
     QGroupBox *modeBox;
 
     QVBoxLayout* layout;

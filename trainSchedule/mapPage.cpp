@@ -1,5 +1,6 @@
 #include "mapPage.h"
 #include "configData.h"
+#include "helpers.h"
 
 #include <QtDebug>
 
@@ -43,10 +44,15 @@ void MapPage::evalSetCenter() const {
 void MapPage::evalMoveToCenter() const {
     QString cmd = "setCenter(" + QString::number(ConfigData::instance().getStartLocation().x(), 'f', 7) + "," + QString::number(ConfigData::instance().getStartLocation().y(), 'f', 7) + ");";
     cmd += "moveToCenter();";
+    qDebug() << "evalMoveToCenter():" << cmd;
     this->mainFrame()->evaluateJavaScript(cmd);
 }
 
-
+// TODO: implement this
+QString MapPage::exportToKml() const {
+    QString kml;
+    return kml;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////
 // setters
@@ -127,8 +133,6 @@ void MapPage::loadMapRoute(const MapRoute& amapRoute) const {
     qDebug() << "START loadMapRoute";
     evalStartNewRoute();
     qDebug() << "evalStartNewRoute";
-    evalSetDistanceInMeter(amapRoute.getDistanceInMeter());
-    qDebug() << "setDistance";
     evalSetName(amapRoute.getName());
     qDebug() << "getName";
     evalSetPolyline(amapRoute.getPolyline());
@@ -146,6 +150,8 @@ void MapPage::loadMapRoute(const MapRoute& amapRoute) const {
     evalSetModus(amapRoute.getModus());
     qDebug() << "modus";
     evalSetDistanceMarkers();
+    evalSetDistanceInMeter(amapRoute.getDistanceInMeter());
+    qDebug() << "setDistance";
     qDebug() << "END loadMapRoute";
 }
 
@@ -230,7 +236,7 @@ void MapPage::fillMapRoute(MapRoute &amapRoute) const {
     qDebug() << "setCurPos";
     amapRoute.setPrevPos(evalGetPrevPos());
     qDebug() << "setPrevPos";
-    amapRoute.setModus(MapRoute::automatic);
+    amapRoute.setModus(MapRoute::runnerAutomatic);
     qDebug() << "setModus";
     amapRoute.setPolyline(evalGetPolyline());
     qDebug() << "setPolyline";

@@ -12,7 +12,7 @@ public:
     MapRoute();
     ~MapRoute();
 
-    typedef enum {automatic=1, manual=2} clickmodus;
+    typedef enum {runnerAutomatic=1, bikerAutomatic=2, manual=3} clickmodus;
 
     // getters
     QPointF getCurPos() const;

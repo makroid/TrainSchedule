@@ -7,7 +7,7 @@ var curPosMarker = null;
 
 ///////////////////////////////////////////////////////////////////
 // tests
-var startLocation = new google.maps.LatLng(48.15494, 11.56468);;
+var startLocation = new google.maps.LatLng(48.15494, 12.56468);;
 
 function setCenter(lat, lng) {
   startLocation = new google.maps.LatLng(lat, lng);
@@ -43,7 +43,7 @@ function MapRoute(aid) {
   this.prevPos = null;
   
 //private:
-  var modus = 1;  // 1: automatic, 2: manual
+  var modus = 1;  // 1: runnerAutomatic, 2: bikerAutomatic, 3: manual
   var distance = 0;
   var historySteps = [];
   var historyDists = []; 
@@ -53,7 +53,7 @@ function MapRoute(aid) {
   
 // setup polygon for route
   var polyOptions = {
-    strokeColor: '#000000',
+    strokeColor: '#FE2E2E',
     strokeOpacity: 0.9,
     strokeWeight: 3,
     clickable: false
@@ -449,9 +449,9 @@ function handleMapDblClick(pos) {
     curRoute.curPos = pos;
 
     // manual or automatic route to curPos
-    if (curRoute.getModus() == 1) {  
+    if (curRoute.getModus() == 1 || curRoute.getModus() == 2) {  
       calcRoute(curRoute.prevPos, curRoute.curPos);
-    } else if (curRoute.getModus() == 2) {
+    } else if (curRoute.getModus() == 3) {
       curRoute.addSinglePosToPoly(curRoute.curPos);
       var dist = distanceBetween(curRoute.prevPos, curRoute.curPos);
       var edge = [curRoute.prevPos, curRoute.curPos];
@@ -467,12 +467,22 @@ function handleMapDblClick(pos) {
 }
 
 function calcRoute(start, end) { 
-  // create a DirectionsRequest using WALKING directions.
-  var request = {
+  // create a DirectionsRequest using WALKING or BICYCLING directions.
+  var request;
+  
+  if (curRoute.getModus() == 2) {
+    request = {
+      origin: start,
+      destination: end,
+      travelMode: google.maps.DirectionsTravelMode.DRIVING // why does BICYCLING not work?
+    };
+  } else {
+    request = {
       origin: start,
       destination: end,
       travelMode: google.maps.DirectionsTravelMode.WALKING
-  };
+    };
+  }
 
   // Route the directions
   directionsService.route(request, function(response, status) {

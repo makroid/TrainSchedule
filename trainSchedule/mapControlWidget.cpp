@@ -26,8 +26,9 @@ void MapControlWidget::createWidgets() {
     deleteButton = new QPushButton(tr("delete route"));
 
     manualRadioButton = new QRadioButton(tr("&manual"));
-    automaticRadioButton = new QRadioButton(tr("&automatic"));
-    automaticRadioButton->setChecked(true);
+    runnerRadioButton = new QRadioButton(tr("&runner"));
+    runnerRadioButton->setChecked(true);
+    bikerRadioButton = new QRadioButton(tr("&biker"));
     modeBox = new QGroupBox(tr("mode"));
 }
 
@@ -38,7 +39,8 @@ void MapControlWidget::createLayout() {
     layout->addWidget(deleteButton);
 
     QVBoxLayout *box = new QVBoxLayout;
-    box->addWidget(automaticRadioButton);
+    box->addWidget(runnerRadioButton);
+    box->addWidget(bikerRadioButton);
     box->addWidget(manualRadioButton);
     modeBox->setLayout(box);
 
@@ -52,7 +54,8 @@ void MapControlWidget::createConnections() {
     connect(newRouteButton, SIGNAL(clicked()), this, SLOT(startNewRoute()));
     connect(undoButton, SIGNAL(clicked()), this, SLOT(undoLastPoint()));
     connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteRoute()));
-    connect(automaticRadioButton, SIGNAL(toggled(bool)), this, SLOT(setClickModeAutomatic(bool)));
+    connect(runnerRadioButton, SIGNAL(toggled(bool)), this, SLOT(setClickModeRunnerAutomatic(bool)));
+    connect(bikerRadioButton, SIGNAL(toggled(bool)), this, SLOT(setClickModeBikerAutomatic(bool)));
     connect(manualRadioButton, SIGNAL(toggled(bool)), this, SLOT(setClickModeManual(bool)));
 }
 
@@ -65,7 +68,7 @@ void MapControlWidget::startNewRoute() {
     if (currentRouteId == -1) {
         currentRouteId = mapPage->evalStartNewRoute();
         qDebug() << "currentRouteId after evalStartNewRoute=" << currentRouteId;
-        automaticRadioButton->setChecked(true);
+        runnerRadioButton->setChecked(true);
         newRouteButton->setText("recording...");
     }
     // update distance
@@ -89,9 +92,15 @@ void MapControlWidget::undoLastPoint() {
 }
 
 
-void MapControlWidget::setClickModeAutomatic (bool isAutomatic) {
+void MapControlWidget::setClickModeRunnerAutomatic (bool isAutomatic) {
     if (isAutomatic) {
-        mapPage->evalSetModus(MapRoute::automatic);
+        mapPage->evalSetModus(MapRoute::runnerAutomatic);
+    }
+}
+
+void MapControlWidget::setClickModeBikerAutomatic (bool isAutomatic) {
+    if (isAutomatic) {
+        mapPage->evalSetModus(MapRoute::bikerAutomatic);
     }
 }
 
@@ -106,11 +115,21 @@ void MapControlWidget::reset() {
     currentRouteId = -1;
     newRouteButton->setText("start new route");
     mapPage->evalDeleteCurRoute();
-    automaticRadioButton->setChecked(true);
+    runnerRadioButton->setChecked(true);
     mapPage->evalMoveToCenter();
 }
 
 void MapControlWidget::setRecording() {
     newRouteButton->setText("recording...");
-    automaticRadioButton->setChecked(true);
+    //runnerRadioButton->setChecked(true);
+}
+
+void MapControlWidget::forwardModeRadioButton() {
+    if (runnerRadioButton->isChecked()) {
+        bikerRadioButton->setChecked(true);
+    } else if (bikerRadioButton->isChecked()) {
+        manualRadioButton->setChecked(true);
+    } else {
+        runnerRadioButton->setChecked(true);
+    }
 }

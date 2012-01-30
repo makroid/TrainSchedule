@@ -1,6 +1,9 @@
 #include "mapAndControlWidget.h"
 #include "configData.h"
 
+#include <QtDebug>
+#include <QKeyEvent>
+
 MapAndControlWidget::MapAndControlWidget(QWidget* parent) :
     QSplitter(parent)
 {
@@ -33,4 +36,12 @@ void MapAndControlWidget::createConnections() {
 
 void MapAndControlWidget::initializeMap() { 
     mapWidget->getMapPage()->mainFrame()->evaluateJavaScript("initialize();");
+    mapWidget->getMapPage()->evalMoveToCenter();
+}
+
+void MapAndControlWidget::keyPressEvent(QKeyEvent *event) {
+    switch (event->key()) {
+        case Qt::Key_M | Qt::CaseInsensitive: mapControlWidget->forwardModeRadioButton(); break;
+        default: break;
+    }
 }

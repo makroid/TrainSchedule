@@ -44,6 +44,7 @@ public slots:
     bool evalDeleteCurRoute() const;
     void evalSetCenter() const;
     void evalMoveToCenter() const;
+    QString exportToKml() const;
 
     // setters (these are const, because they dont
     // change this object)

@@ -161,15 +161,17 @@ void MapRoute::readXML(QXmlStreamReader &xmlReader) {
                 xmlReader.readNext(); // skips </mapid>
             } else if (xmlReader.name() == "distanceinmeter") {
                 qDebug() << "read distanceinmeter";
-                distanceInMeter = xmlReader.readElementText().toInt();
+                distanceInMeter = xmlReader.readElementText().toDouble();
                 xmlReader.readNext(); // skips </distanceinmeter>
             } else if (xmlReader.name() == "modus") {
                 qDebug() << "read modus";
                 QString m = xmlReader.readElementText();
-                if (m == "2") {
+                if (m == "3") {
                     modus = manual;
+                } else if (m == "2"){
+                    modus = bikerAutomatic;
                 } else {
-                    modus = automatic;
+                    modus = runnerAutomatic;
                 }
                 xmlReader.readNext();
             } else if (xmlReader.name() == "historysteps") {

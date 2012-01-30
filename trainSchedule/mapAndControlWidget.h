@@ -5,9 +5,9 @@
 #include "mapControlWidget.h"
 
 #include <QWidget>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QSplitter>
+
+class QKeyEvent;
 
 class MapAndControlWidget : public QSplitter
 {
@@ -18,6 +18,9 @@ public:
 
     MapWidget* getMapWidget() const { return mapWidget; }
     MapControlWidget* getMapControlWidget() const { return mapControlWidget; }
+
+protected:
+    void keyPressEvent(QKeyEvent *);
 
 private slots:
     void initializeMap();

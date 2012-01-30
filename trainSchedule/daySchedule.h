@@ -28,7 +28,7 @@ public:
 
     // typedefs
     typedef QList<QSharedPointer<Session> > SessionList;
-    typedef typename QList<QSharedPointer<Session> >::const_iterator constSessionIter;
+    typedef QList<QSharedPointer<Session> >::const_iterator constSessionIter;
 
     // getters
     const SessionList& getSessions() const { return sessions; }
