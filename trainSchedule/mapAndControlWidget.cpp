@@ -41,7 +41,7 @@ void MapAndControlWidget::initializeMap() {
 
 void MapAndControlWidget::keyPressEvent(QKeyEvent *event) {
     switch (event->key()) {
-        case Qt::Key_M | Qt::CaseInsensitive: mapControlWidget->forwardModeRadioButton(); break;
+        case Qt::Key_Shift: mapControlWidget->forwardModeRadioButton(); break;
         default: break;
     }
 }
