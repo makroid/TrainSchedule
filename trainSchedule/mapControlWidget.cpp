@@ -1,5 +1,6 @@
 #include "mapControlWidget.h"
 #include "mapWidget.h"
+#include "kmlExportDialog.h"
 #include "mapPage.h"
 
 #include <QList>
@@ -30,6 +31,8 @@ void MapControlWidget::createWidgets() {
     runnerRadioButton->setChecked(true);
     bikerRadioButton = new QRadioButton(tr("&biker"));
     modeBox = new QGroupBox(tr("mode"));
+
+    kmlExportButton = new QPushButton(tr("export kml..."));
 }
 
 void MapControlWidget::createLayout() {
@@ -47,6 +50,7 @@ void MapControlWidget::createLayout() {
     layout->addWidget(modeBox);
     layout->addStretch();
 
+    layout->addWidget(kmlExportButton);
     setLayout(layout);
 }
 
@@ -57,6 +61,7 @@ void MapControlWidget::createConnections() {
     connect(runnerRadioButton, SIGNAL(toggled(bool)), this, SLOT(setClickModeRunnerAutomatic(bool)));
     connect(bikerRadioButton, SIGNAL(toggled(bool)), this, SLOT(setClickModeBikerAutomatic(bool)));
     connect(manualRadioButton, SIGNAL(toggled(bool)), this, SLOT(setClickModeManual(bool)));
+    connect(kmlExportButton, SIGNAL(clicked()), this, SLOT(showExportRouteAsKmlDialog()));
 }
 
 void MapControlWidget::startNewRoute() {
@@ -131,5 +136,12 @@ void MapControlWidget::forwardModeRadioButton() {
         manualRadioButton->setChecked(true);
     } else {
         runnerRadioButton->setChecked(true);
+    }
+}
+
+void MapControlWidget::showExportRouteAsKmlDialog() {
+    KmlExportDialog kmlDialog(mapWidget, this);
+    if (kmlDialog.exec()) {
+
     }
 }

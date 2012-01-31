@@ -10,6 +10,8 @@
 #include <QPointF>
 #include <QString>
 
+class KmlParameters;
+
 #include "mapRoute.h"
 
 class MapPage : public QWebPage
@@ -44,7 +46,7 @@ public slots:
     bool evalDeleteCurRoute() const;
     void evalSetCenter() const;
     void evalMoveToCenter() const;
-    QString exportToKml() const;
+    QString evalExportAsKml(const KmlParameters&) const;
 
     // setters (these are const, because they dont
     // change this object)

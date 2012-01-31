@@ -10,6 +10,7 @@
 
 class MapPage;
 class MapWidget;
+class KmlParameters;
 
 class MapControlWidget : public QWidget
 {
@@ -33,6 +34,7 @@ private slots:
     void setClickModeRunnerAutomatic(bool);
     void setClickModeBikerAutomatic(bool);
     void setClickModeManual(bool);
+    void showExportRouteAsKmlDialog();
 
 private:
     void createWidgets();
@@ -46,6 +48,7 @@ private:
     QRadioButton *runnerRadioButton;
     QRadioButton *bikerRadioButton;
     QGroupBox *modeBox;
+    QPushButton* kmlExportButton;
 
     QVBoxLayout* layout;
 

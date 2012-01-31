@@ -222,7 +222,17 @@ function MapRoute(aid) {
   this.getLastPolyPos = function() {
     return this.poly.getPath().getAt(this.poly.getPath().length-1);
   };
+  
+  this.getFirstPolyPos = function() {
+    return this.poly.getPath().getAt(0);
+  }
+  
+  // return MVCarray of LatLngs-objects
+  this.getPolylineLatLng = function() {
+    return this.poly.getPath();
+  }
 
+  // return standard JavaScript array of lat,lng entries (doubles)
   this.getPolyline = function() {
     var ps = [];
     var path = this.poly.getPath();
@@ -528,3 +538,141 @@ function distanceBetween(latLngFrom,latLngTo) {
     return google.maps.geometry.spherical.computeDistanceBetween(latLngFrom, latLngTo);
 }
 
+
+///////////////////////////////////////////////////////////////////////
+// functions for generating kml file
+
+function kmlHeader() {
+  var kmlheader = [
+    "<?xml version='1.0' encoding='UTF-8'?>\n",
+    "<kml xmlns='http://www.opengis.net/kml/2.2'\n",
+    " xmlns:gx='http://www.google.com/kml/ext/2.2'>\n",
+    "<Document>\n",
+    "  <name>A tour and some features</name>\n",
+    "  <open>1</open>\n",
+    "  <gx:Tour>\n",
+    "    <name>Play Tour!</name>\n",
+    "    <gx:Playlist>\n"
+  ].join("");
+
+  return kmlheader;
+}
+
+function kmlEnd() {
+  var kmlPoly = kmlPolyline(); 
+  var kmlend = [
+    "    </gx:Playlist>\n",
+    "  </gx:Tour>\n",
+    kmlPoly,
+    "</Document>\n",
+    "</kml>\n"
+  ].join("");
+  
+  return kmlend;
+}
+
+function kmlFlyToStart(altitude) {
+  var kmlfts = [
+    "<gx:FlyTo>\n",
+    "  <gx:duration>5</gx:duration>\n",
+    "  <gx:flyToMode>bounce</gx:flyToMode>\n",
+    "  <Camera>\n",
+    "    <longitude>" + curRoute.getFirstPolyPos().lng() + "</longitude>",
+    "    <latitude>" + curRoute.getFirstPolyPos().lat() + "</latitude>\n",
+    "    <altitude>" + altitude + "</altitude>\n",
+    "    <altitudeMode>absolute</altitudeMode>\n",
+    "  </Camera>\n",
+    "</gx:FlyTo>\n"
+  ].join("");
+   
+   return kmlfts;
+}
+
+function kmlWait(duration) {
+  var kmlwait = [
+    "<gx:Wait>\n",
+    "  <gx:duration>" + duration + "</gx:duration>\n",
+    "</gx:Wait>\n"
+  ].join("");
+
+  return kmlwait;
+}
+
+function kmlFlyTo(duration, lat, lng, altitude, range) {
+  var kmlflyto = [
+    "<gx:FlyTo>\n",
+    "  <gx:duration>" + duration + "</gx:duration>\n",
+    "  <gx:flyToMode>smooth</gx:flyToMode>\n",
+    "  <LookAt>\n",
+    "    <longitude>" + lng + "</longitude>\n",
+    "    <latitude>" + lat + "</latitude>\n",
+    "    <altitude>" + altitude + "</altitude>\n",
+    "    <range>" + range + "</range>\n",
+    "    <altitudeMode>relativeToGround</altitudeMode>\n",
+    "  </LookAt>\n",
+    "</gx:FlyTo>\n"
+  ].join("");
+  
+  return kmlflyto;
+}
+
+function kmlPolyline() {
+  var kmlpoly = [
+    "<Style id='mystyle'>",
+    "  <LineStyle>",
+    "    <color>ff0000ff</color>",
+    "    <width>6</width>",
+    "  </LineStyle>",
+    "  <PolyStyle>",
+    "    <color>7f00ff00</color>",
+    "  </PolyStyle>",
+    "</Style>",
+    "<Placemark>",
+    "  <name>TrainingTour</name>",
+    "  <description>Training Tour exorted from Training Schedule</description>",
+    "  <styleUrl>#mystyle</styleUrl>",
+    "  <LineString>",
+    "    <extrude>0</extrude>",
+    "    <tessellate>1</tessellate>",
+    "    <coordinates>\n"
+  ].join("\n");
+  
+  var routeLatLngs = curRoute.getPolylineLatLng();
+  var routeKmlCoordinates = "";
+  for (var i=0; i<routeLatLngs.getLength(); i++) {
+    routeKmlCoordinates += routeLatLngs.getAt(i).lng() + "," + routeLatLngs.getAt(i).lat() + "\n";
+  }
+  kmlpoly += routeKmlCoordinates;
+
+  var kmlpolyend = [
+    "    </coordinates>",
+    "  </LineString>",
+    "</Placemark>\n"
+  ].join("\n");
+  
+  kmlpoly += kmlpolyend;
+  return kmlpoly;
+}
+
+function generateKmlCode(totalDuration, altitude, range) {
+  var result = "";
+  
+  if (totalDuration <= 1 || curRoute === null) { return result; }
+  
+  var dist = curRoute.getDistance(); // in meter
+  var speed = dist / totalDuration; // in meter/s
+
+  result += kmlHeader();
+  result += kmlFlyToStart(altitude);
+  result += kmlWait(1);
+  
+  var routeLatLngs = curRoute.getPolylineLatLng();
+  for (var i=1; i<routeLatLngs.getLength(); i++) {
+    var dist = distanceBetween(routeLatLngs.getAt(i-1), routeLatLngs.getAt(i)); // in meter
+    var duration = dist / speed;
+    result += kmlFlyTo(duration, routeLatLngs.getAt(i).lat(), routeLatLngs.getAt(i).lng(), altitude, range);
+  }
+  result += kmlEnd();
+  
+  return result;
+}

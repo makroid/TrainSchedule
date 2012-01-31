@@ -47,7 +47,9 @@ SOURCES += main.cpp \
     configData.cpp \
     configDialog.cpp \
     sessionType.cpp \
-    weekChange.cpp
+    weekChange.cpp \
+    kmlParameters.cpp \
+    kmlExportDialog.cpp
 
 HEADERS += \
     duration.h \
@@ -87,6 +89,8 @@ HEADERS += \
     configData.h \
     configDialog.h \
     sessionType.h \
-    weekChange.h
+    weekChange.h \
+    kmlParameters.h \
+    kmlExportDialog.h
 
 RESOURCES +=

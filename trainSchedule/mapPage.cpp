@@ -1,6 +1,7 @@
 #include "mapPage.h"
 #include "configData.h"
 #include "helpers.h"
+#include "kmlParameters.h"
 
 #include <QtDebug>
 
@@ -49,9 +50,12 @@ void MapPage::evalMoveToCenter() const {
 }
 
 // TODO: implement this
-QString MapPage::exportToKml() const {
-    QString kml;
-    return kml;
+QString MapPage::evalExportAsKml(const KmlParameters& kml) const {
+    QString cmd = QString("generateKmlCode(%1,%2,%3);").arg(kml.durationInSec).arg(kml.altitudeInMeter).arg(kml.rangeInMeter);
+    qDebug() << "evalExportAsKml()=" << cmd;
+    QVariant kmlCode = this->mainFrame()->evaluateJavaScript(cmd);
+
+    return kmlCode.toString();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
