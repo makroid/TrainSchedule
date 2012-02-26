@@ -32,6 +32,10 @@ void MapWidget::fillMapRoute(MapRoute &amapRoute) const {
     mapPage->fillMapRoute(amapRoute);
 }
 
-void MapWidget::loadMapRoute(const MapRoute &amapRoute) const {
-    mapPage->loadMapRoute(amapRoute);
+int MapWidget::loadMapRoute(const MapRoute &amapRoute) const {
+    return mapPage->loadMapRoute(amapRoute);
+}
+
+bool MapWidget::extendMapRoute(const MapRoute &amapRoute) const {
+    return mapPage->extendMapRoute(amapRoute);
 }

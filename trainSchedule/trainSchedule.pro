@@ -49,7 +49,15 @@ SOURCES += main.cpp \
     sessionType.cpp \
     weekChange.cpp \
     kmlParameters.cpp \
-    kmlExportDialog.cpp
+    kmlExportDialog.cpp \
+    myRoutesTable.cpp \
+    myRoutesWidget.cpp \
+    myRoutesModel.cpp \
+    distSortFilterProxyModel.cpp \
+    myRoutesAddDialog.cpp \
+    trainData.cpp \
+    mapOptionWidget.cpp \
+    mapAndOptionWidget.cpp
 
 HEADERS += \
     duration.h \
@@ -91,6 +99,15 @@ HEADERS += \
     sessionType.h \
     weekChange.h \
     kmlParameters.h \
-    kmlExportDialog.h
+    kmlExportDialog.h \
+    myRoutesTable.h \
+    myRoutesListener.h \
+    myRoutesWidget.h \
+    myRoutesModel.h \
+    distSortFilterProxyModel.h \
+    myRoutesAddDialog.h \
+    trainData.h \
+    mapOptionWidget.h \
+    mapAndOptionWidget.h
 
 RESOURCES +=

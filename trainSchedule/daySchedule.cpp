@@ -15,16 +15,15 @@ DaySchedule::DaySchedule(QXmlStreamReader &xmlReader) {
     xmlReader.readNext();
     while(!xmlReader.atEnd()) {
         if (xmlReader.isEndElement()) {
+            xmlReader.readNext();
             break;
         }
         if (xmlReader.isStartElement()) {
             if (xmlReader.name() == "date") {
-                qDebug() << "read date";
                 QString dateStr = xmlReader.readElementText();
                 date = QDate::fromString(dateStr, "ddd dd.MM.yyyy");
                 xmlReader.readNext();
             } else if (xmlReader.name() == "sessions") {
-                qDebug() << "read sessions";
                 readSessionsXML(xmlReader);
                 xmlReader.readNext();
             } else {
@@ -44,10 +43,8 @@ void DaySchedule::readSessionsXML(QXmlStreamReader& xmlReader) {
         }
         if (xmlReader.isStartElement()) {
             if (xmlReader.name() == "session") {
-                qDebug() << "read session";
                 QSharedPointer<Session> rs = QSharedPointer<Session>(new Session(xmlReader));
                 addSession(rs);
-                xmlReader.readNext();
             } else {
                 Helper::skipUnknownElements(xmlReader);
             }

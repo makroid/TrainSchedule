@@ -10,9 +10,7 @@ Week::Week(int aweek, int ayear) : iweek(aweek), iyear(ayear)
 
 Week::Week(QXmlStreamReader &xmlReader) {
     QString text = xmlReader.readElementText();
-    if (xmlReader.isStartElement()) { qDebug() << "start element"; }
-    qDebug() << "week text=" << text;
-    qDebug() << xmlReader.name();
+
     QStringList weekyear = text.split(":");
     if (weekyear.length() != 2) {
         // TODO: handle
@@ -22,7 +20,6 @@ Week::Week(QXmlStreamReader &xmlReader) {
     iweek = week;
     iyear = year;
     xmlReader.readNext(); // </week>
-    qDebug() << "week last" << xmlReader.name();
 }
 
 Week::Week(const Week &aweek) : iweek(aweek.iweek), iyear(aweek.iyear)

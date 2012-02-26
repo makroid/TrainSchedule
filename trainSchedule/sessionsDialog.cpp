@@ -2,9 +2,11 @@
 
 // TODO: register modifications and ask whether to apply them
 
-SessionsDialog::SessionsDialog(DaySchedule* ds, QWidget* parent)
+SessionsDialog::SessionsDialog(QSharedPointer<TrainingData> td, Week w, int d, QWidget* parent)
     : QDialog(parent),
-      daySdl(ds)
+      trainingData(td),
+      week(w),
+      day(d)
 
 {
     setWindowFlags(Qt::Window);
@@ -14,7 +16,7 @@ SessionsDialog::SessionsDialog(DaySchedule* ds, QWidget* parent)
 
 void SessionsDialog::createWidgets() {
     mapAndControlWiget = new MapAndControlWidget(this);
-    sessionsWidget = new SessionsWidget(daySdl, mapAndControlWiget->getMapWidget(), mapAndControlWiget->getMapControlWidget(), this);
+    sessionsWidget = new SessionsWidget(trainingData, mapAndControlWiget, week, day, this);
     //mapAndControlWiget->hide();
 }
 

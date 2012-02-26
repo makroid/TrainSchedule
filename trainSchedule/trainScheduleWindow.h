@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QSharedPointer>
 
-#include "weekMap.h"
+#include "trainData.h"
 
 class TrainScheduleWidget;
 class SessionPainter;
@@ -35,7 +35,7 @@ private:
     bool okToContinue();
 
     SessionPainter* spainter;
-    QSharedPointer<WeekMap> weekMap;
+    QSharedPointer<TrainingData> trainingData;
     TrainScheduleWidget* tsWidget;
 
     QAction* newWeekAction;

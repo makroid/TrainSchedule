@@ -1,12 +1,13 @@
 #ifndef MAPANDCONTROLWIDGET_H
 #define MAPANDCONTROLWIDGET_H
 
-#include "mapWidget.h"
-#include "mapControlWidget.h"
-
 #include <QWidget>
 #include <QSplitter>
 
+class MapWidget;
+class MapControlWidget;
+class MapOptionWidget;
+class MapAndOptionWidget;
 class QKeyEvent;
 
 class MapAndControlWidget : public QSplitter
@@ -32,6 +33,9 @@ private:
 
     MapWidget* mapWidget;
     MapControlWidget* mapControlWidget;
+    MapOptionWidget* mapOptionWidget;
+
+    MapAndOptionWidget* mapAndOptionWidget;
 };
 
 #endif // MAPANDCONTROLWIDGET_H

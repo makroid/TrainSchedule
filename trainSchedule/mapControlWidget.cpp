@@ -116,12 +116,12 @@ void MapControlWidget::setClickModeManual (bool isManual) {
 }
 
 
-void MapControlWidget::reset() {
+void MapControlWidget::reset(bool moveToCenter) {
     currentRouteId = -1;
     newRouteButton->setText("start new route");
     mapPage->evalDeleteCurRoute();
     runnerRadioButton->setChecked(true);
-    mapPage->evalMoveToCenter();
+    if (moveToCenter) mapPage->evalMoveToCenter();
 }
 
 void MapControlWidget::setRecording() {

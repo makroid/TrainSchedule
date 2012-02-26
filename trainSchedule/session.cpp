@@ -19,6 +19,7 @@ Session::Session(QXmlStreamReader &xmlReader) {
     xmlReader.readNext();
     while(!xmlReader.atEnd()) {
         if (xmlReader.isEndElement()) {
+            xmlReader.readNext();
             break;
         }
         if (xmlReader.isStartElement()) {
@@ -37,21 +38,17 @@ Session::Session(QXmlStreamReader &xmlReader) {
                 duration = tmpDur;
                 xmlReader.readNext();
             } else if (xmlReader.name() == "distance") {
-                qDebug() << "read distance";
                 Distance tmpDist(xmlReader);
                 distance = tmpDist;
                 xmlReader.readNext();
             } else if (xmlReader.name() == "description") {
-                qDebug() << "read description";
                 description = xmlReader.readElementText();
                 xmlReader.readNext();
             } else if (xmlReader.name() == "name") {
                 name = xmlReader.readElementText();
                 xmlReader.readNext();
             } else if (xmlReader.name() == "maproute") {
-                qDebug() << "read maproute";
                 mapRoute.readXML(xmlReader);
-                xmlReader.readNext();
             } else {
                 Helper::skipUnknownElements(xmlReader);
             }

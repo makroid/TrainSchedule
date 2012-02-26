@@ -19,7 +19,9 @@ public:
     MapPage* getMapPage() const { return mapPage; }
     double getDistanceInMeter() const;
     void fillMapRoute(MapRoute&) const;
-    void loadMapRoute(const MapRoute&) const;
+    int loadMapRoute(const MapRoute&) const;
+    bool extendMapRoute(const MapRoute&) const;
+    bool isCurRouteNull() const { return mapPage->evalIsCurRouteNull(); }
 
 private:
     MapPage* mapPage;

@@ -2,6 +2,8 @@
 #include "helpers.h"
 
 #include <QtDebug>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 
 // this is a pure data-storing class with mainly getters and setters
 
@@ -19,6 +21,13 @@ QPointF MapRoute::getCurPos() const {
 
 QPointF MapRoute::getPrevPos() const {
     return prevPos;
+}
+
+QPointF MapRoute::getStartPos() const {
+    if (polyline.size() > 0) {
+        return polyline[0];
+    }
+    return QPointF(0,0);
 }
 
 QString MapRoute::getName() const {
@@ -137,34 +146,29 @@ void MapRoute::writeXml(QXmlStreamWriter &writer) const {
 }
 
 void MapRoute::readXML(QXmlStreamReader &xmlReader) {
-    xmlReader.readNext(); // reads eg <curpos>
+    xmlReader.readNext();
     while(!xmlReader.atEnd()) {
         if (xmlReader.isEndElement()) {
+            xmlReader.readNext();
             break;
         }
         if (xmlReader.isStartElement()) {
             if (xmlReader.name() == "curpos") {
-                qDebug() << "read curpos";
                 curPos = Helper::stringToPoint(xmlReader.readElementText());
                 xmlReader.readNext(); // skips </curpos>
             } else if (xmlReader.name() == "prevpos") {
-                qDebug() << "read prevpos";
                 prevPos = Helper::stringToPoint(xmlReader.readElementText());
                 xmlReader.readNext(); // skips </prevpos>
             } else if (xmlReader.name() == "name") {
-                qDebug() << "read name";
                 name = xmlReader.readElementText();
                 xmlReader.readNext(); // skips </name>
             } else if (xmlReader.name() == "mapid") {
-                qDebug() << "read mapid";
                 mapId = xmlReader.readElementText().toInt();
                 xmlReader.readNext(); // skips </mapid>
             } else if (xmlReader.name() == "distanceinmeter") {
-                qDebug() << "read distanceinmeter";
                 distanceInMeter = xmlReader.readElementText().toDouble();
                 xmlReader.readNext(); // skips </distanceinmeter>
             } else if (xmlReader.name() == "modus") {
-                qDebug() << "read modus";
                 QString m = xmlReader.readElementText();
                 if (m == "3") {
                     modus = manual;
@@ -175,15 +179,12 @@ void MapRoute::readXML(QXmlStreamReader &xmlReader) {
                 }
                 xmlReader.readNext();
             } else if (xmlReader.name() == "historysteps") {
-                qDebug() << "read historysteps";
                 readHistoryStepsXML(xmlReader);
                 xmlReader.readNext();
             } else if (xmlReader.name() == "distances") {
-                qDebug() << "read distances";
                 readDistancesXML(xmlReader);
                 xmlReader.readNext();
             } else if (xmlReader.name() == "polyline") {
-                qDebug() << "read polyline";
                 readPolylineXML(xmlReader);
                 xmlReader.readNext();
             } else {

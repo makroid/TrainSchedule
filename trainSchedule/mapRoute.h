@@ -4,7 +4,9 @@
 #include <QString>
 #include <QPointF>
 #include <QList>
-#include <QXmlStreamWriter>
+
+class QXmlStreamWriter;
+class QXmlStreamReader;
 
 
 class MapRoute {
@@ -24,6 +26,7 @@ public:
     const QList<int>& getHistorySteps() const;
     const QList<double>& getHistoryDists() const;
     const QList<QPointF>& getPolyline() const;
+    QPointF getStartPos() const;
 
     // setters
     void setCurPos(QPointF curPos);

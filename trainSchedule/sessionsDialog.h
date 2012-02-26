@@ -3,8 +3,11 @@
 
 #include <QDialog>
 #include <QHBoxLayout>
+#include <QSharedPointer>
+
 
 #include "daySchedule.h"
+#include "trainData.h"
 #include "sessionsWidget.h"
 #include "mapAndControlWidget.h"
 
@@ -15,7 +18,7 @@ class SessionsDialog : public QDialog
 
 public:
     // TODO: replace DaySchedule* by QSharedPointer
-    SessionsDialog(DaySchedule* ds, QWidget* parent=0);
+    SessionsDialog(QSharedPointer<TrainingData> td, Week w, int day, QWidget* parent=0);
 
     bool isModified() const;
 
@@ -23,7 +26,10 @@ private:
     void createWidgets();
     void createLayout();
 
-    DaySchedule* daySdl;
+    QSharedPointer<TrainingData> trainingData;
+    Week week;
+    int day;
+
     SessionsWidget* sessionsWidget;
     MapAndControlWidget* mapAndControlWiget;
     QHBoxLayout* layout;

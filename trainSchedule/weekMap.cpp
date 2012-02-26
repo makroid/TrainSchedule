@@ -4,11 +4,8 @@
 #include "WeekMapListener.h"
 #include "configData.h"
 
-
-#include <QFile>
-#include <QByteArray>
-#include <QDataStream>
-#include <QTextStream>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 #include <QtDebug>
 
 WeekMap::WeekMap()
@@ -16,6 +13,7 @@ WeekMap::WeekMap()
     createConnections();
 }
 
+// TODO: remove these connections => just use listener mechanism
 void WeekMap::createConnections() {
     connect(this, SIGNAL(newWeekInserted(WeekChange)), this, SLOT(updateListeners(WeekChange)));
     connect(this, SIGNAL(weekRemoved(WeekChange)), this, SLOT(updateListeners(WeekChange)));
@@ -70,78 +68,17 @@ void WeekMap::writeXML(QXmlStreamWriter& writer) const {
     writer.writeEndElement();
 }
 
-bool WeekMap::save(const QString &fileName) {
-    // save output in string
-    bool doCompress = ConfigData::instance().doCompressSdlFile();
-    QString result;
-    QXmlStreamWriter xmlWriter(&result);
-    xmlWriter.setAutoFormatting(true);
-    xmlWriter.writeStartDocument();
-    writeXML(xmlWriter);
-    xmlWriter.writeEndDocument();
-
-    QFile file(fileName);
-    // write string to file
-    if (doCompress) {
-        qDebug() << "writing compressed file";
-        if ( ! file.open(QFile::WriteOnly)) {
-            // TODO warn
-            qDebug() << "Warning: can not write" << fileName;
-            return false;
-        }
-        QByteArray ba = qCompress(result.toUtf8());
-        QDataStream dataOut(&file);
-        dataOut << ba;
-        file.close();
-    } else {
-        qDebug() << "writing UNcompressed file";
-        if ( ! file.open(QFile::WriteOnly)) {
-            // TODO warn
-            return false;
-        }
-        QTextStream txtStream(&file);
-        txtStream << result;
-        file.close();
-    }
-    return true;
-}
-
-bool WeekMap::readXML(const QString &fileName) {
-    QFile file(fileName);
-    if ( ! file.open(QFile::ReadOnly)) {
-        // TODO: warn
-        return false;
-    }
-
-    QString xmlString;
-
-    if (ConfigData::instance().doCompressSdlFile()) {
-        qDebug() << "reading from compressed file";
-        QDataStream dataIn(&file);
-        QByteArray compressedByteArray;
-        dataIn >> compressedByteArray;
-        QByteArray xmlByteArray = qUncompress(compressedByteArray);
-        xmlString = QString::fromUtf8(xmlByteArray.data(), xmlByteArray.size());
-    } else {
-        qDebug() << "reading UNcompressed file";
-        QTextStream txtIn(&file);
-        xmlString = txtIn.readAll();
-    }
-
-    qDebug() << "xmlString=" << xmlString;
-    QXmlStreamReader xmlReader(xmlString);
-
+void WeekMap::readXML(QXmlStreamReader& xmlReader) {
     xmlReader.readNext();
     while( ! xmlReader.atEnd()) {
         if (xmlReader.isEndElement()) {
+            xmlReader.readNext();
             break;
         }
         if (xmlReader.isStartElement()) {
             if (xmlReader.name() == "weekmap") {
-                qDebug() << "read weekmap";
                 xmlReader.readNext();
             } else if (xmlReader.name() == "week") {
-                qDebug() << "read week";
                 readWeekXML(xmlReader);
             }
             else {
@@ -151,32 +88,24 @@ bool WeekMap::readXML(const QString &fileName) {
             xmlReader.readNext();
         }
     }
-    file.close();
-    return true;
 }
 
 void WeekMap::readWeekXML(QXmlStreamReader& xmlReader) {
     Week aweek(xmlReader);
-    qDebug() << "after week read";
     xmlReader.readNext();
-    qDebug() << "after read next";
-    qDebug() << "next=" << xmlReader.name();
-    if (xmlReader.isStartElement()) { qDebug() << "start element"; }
+
     if (xmlReader.isStartElement()) {
         if (xmlReader.name() == "weekschedule") {
-            qDebug() << "read weekschedule";
-            xmlReader.readNext();
-            qDebug() << "next=" << xmlReader.name();
+            xmlReader.readNext();          
+
             QSharedPointer<WeekSchedule> ws = QSharedPointer<WeekSchedule>(new WeekSchedule(xmlReader));
             wmap.insert(aweek, ws);
             WeekChange wc(aweek, WeekChange::WeekInserted);
             emit newWeekInserted(wc);
-            xmlReader.readNext();
         } else {
             Helper::skipUnknownElements(xmlReader);
         }
     } else {
-        qDebug() << "in else";
         xmlReader.readNext();
     }
 }

@@ -1,4 +1,8 @@
 #include "mapAndControlWidget.h"
+#include "mapAndOptionWidget.h"
+#include "mapControlWidget.h"
+#include "mapWidget.h"
+#include "mapOptionWidget.h"
 #include "configData.h"
 
 #include <QtDebug>
@@ -15,13 +19,15 @@ MapAndControlWidget::MapAndControlWidget(QWidget* parent) :
 void MapAndControlWidget::createWidgets() {
     mapWidget = new MapWidget(this);
     mapWidget->load(QUrl("mapsTest.html"));
+    mapOptionWidget = new MapOptionWidget(mapWidget);
+    mapAndOptionWidget = new MapAndOptionWidget(mapWidget, mapOptionWidget, this);
 
     mapControlWidget = new MapControlWidget(mapWidget);
     mapControlWidget->setEnabled(false);
 }
 
 void MapAndControlWidget::createLayout() {
-    addWidget(mapWidget);
+    addWidget(mapAndOptionWidget);
     addWidget(mapControlWidget);
 
     QSizePolicy policy = sizePolicy();
@@ -42,6 +48,7 @@ void MapAndControlWidget::initializeMap() {
 void MapAndControlWidget::keyPressEvent(QKeyEvent *event) {
     switch (event->key()) {
         case Qt::Key_Shift: mapControlWidget->forwardModeRadioButton(); break;
+        case Qt::Key_L: mapAndOptionWidget->setOptionVisible(true); break;
         default: break;
     }
 }

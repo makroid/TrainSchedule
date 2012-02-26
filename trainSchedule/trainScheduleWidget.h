@@ -18,13 +18,14 @@
 
 
 class QResizeEvent;
+class TrainingData;
 
 class TrainScheduleWidget : public QTableWidget, public WeekMapListener
 {
     Q_OBJECT
 
 public:
-    TrainScheduleWidget(QSharedPointer<WeekMap> wm, SessionPainter* const sp, QWidget* parent=0);
+    TrainScheduleWidget(QSharedPointer<TrainingData> td, SessionPainter* const sp, QWidget* parent=0);
 
     QSize sizeHint() const;
     bool isModified() const;
@@ -42,7 +43,7 @@ private:
     void insertNewWeek(Week);
     void removeWeek(Week);
 
-    const QSharedPointer<WeekMap> weekMap;
+    const QSharedPointer<TrainingData> trainingData;
     SessionPainter* const spainter;
 
     // a week has 7 trainday widgets and one summary widget

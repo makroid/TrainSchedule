@@ -1,14 +1,15 @@
 #include "trainScheduleWidget.h"
 #include "week.h"
 #include "sessionsDialog.h"
+#include "trainData.h"
 
 #include <QtDebug>
 #include <QHeaderView>
 #include <QStringList>
 
-TrainScheduleWidget::TrainScheduleWidget(QSharedPointer<WeekMap> wm, SessionPainter* const sp, QWidget *parent)
+TrainScheduleWidget::TrainScheduleWidget(QSharedPointer<TrainingData> td, SessionPainter* const sp, QWidget *parent)
     : QTableWidget(parent),
-      weekMap(wm),
+      trainingData(td),
       spainter(sp),
       widgetsPerRow(Week::daysPerWeek+1)
 {
@@ -72,12 +73,12 @@ void TrainScheduleWidget::insertNewWeek(Week aweek) {
     // if daywidget changes plot-height, corresponding row must be adapted
     // => setRowHeightTo slot is called
     for (int day=0; day<Week::daysPerWeek; day++) {
-        ScheduleCellWidget* tdw = new TrainDayWidget(weekMap->getDayInWeek(aweek, day), spainter, aweek, this);
+        ScheduleCellWidget* tdw = new TrainDayWidget(trainingData, spainter, aweek, day, this);
         connect(tdw, SIGNAL(plotHeightChanged(Week)), this, SLOT(setRowHeightFor(Week)));
         tdws.push_back(tdw);
     }
     // create summary widget
-    ScheduleCellWidget* summaryWidget = new SummaryWidget(weekMap->getWeekSummary(aweek), spainter, aweek, this);
+    ScheduleCellWidget* summaryWidget = new SummaryWidget(trainingData->getWeekMap()->getWeekSummary(aweek), spainter, aweek, this);
     tdws.push_back(summaryWidget);
     connect(summaryWidget, SIGNAL(plotHeightChanged(Week)), this , SLOT(setRowHeightFor(Week)));
 

@@ -1,6 +1,11 @@
 #include "distance.h"
 #include <QtDebug>
 
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+
+#include "helpers.h"
+
 Distance::Distance() : dist(0.0), unit(KM)
 {}
 
@@ -14,7 +19,6 @@ Distance::Distance(QXmlStreamReader &xmlReader) {
         if (xmlReader.isStartElement()) {
             if (xmlReader.name() == "dist") {               
                 dist = xmlReader.readElementText().toDouble();
-                qDebug() << "reading dist=" << dist;
                 xmlReader.readNext();
             } else if (xmlReader.name() == "unit") {
                 QString u = xmlReader.readElementText();
@@ -27,7 +31,7 @@ Distance::Distance(QXmlStreamReader &xmlReader) {
                 }
                 xmlReader.readNext();
             } else {
-                // skipUnknownElement(xmlReader);
+                Helper::skipUnknownElements(xmlReader);
             }
         } else {
             xmlReader.readNext();

@@ -22,7 +22,8 @@ public:
     MapPage(QWidget *parent = 0);
 
     void fillMapRoute(MapRoute&) const;
-    void loadMapRoute(const MapRoute&) const;
+    int loadMapRoute(const MapRoute&) const;
+    bool extendMapRoute(const MapRoute&) const;
 
     QString LatLng(const QPointF&) const;
 
@@ -46,13 +47,15 @@ public slots:
     bool evalDeleteCurRoute() const;
     void evalSetCenter() const;
     void evalMoveToCenter() const;
+    void evalJoinWithCurRoute(const MapRoute&) const;
     QString evalExportAsKml(const KmlParameters&) const;
+    void evalGeocodeAddress(const QString& address) const;
 
     // setters (these are const, because they dont
     // change this object)
     void evalSetDistanceInMeter(double distanceInMeter) const;
     void evalSetName(QString name) const;
-    void evalSetPolyline(const QList<QPointF>&) const;
+    void evalSetPolylineAndFitBounds(const QList<QPointF>&) const;
     void evalSetHistorySteps(const QList<int>&) const;
     void evalSetHistoryDists(const QList<double>&) const;
     void evalSetId(int) const;

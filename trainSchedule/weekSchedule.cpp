@@ -19,25 +19,19 @@ WeekSchedule::WeekSchedule(Week aweek) : week(aweek) {
 }
 
 WeekSchedule::WeekSchedule(QXmlStreamReader &xmlReader) {
-    qDebug() << "weekschedule constructor xmlReader";
-    //xmlReader.readNext();
-    qDebug() << "next=" << xmlReader.name();
+    xmlReader.readNext();
     while(!xmlReader.atEnd()) {
-        qDebug() << "in loop";
         if (xmlReader.isEndElement()) {
+            xmlReader.readNext();
             break;
         }
         if (xmlReader.isStartElement()) {
             if (xmlReader.name() == "week") {
-                qDebug() << "read weekschedule week";
                 Week w(xmlReader);
                 week = w;
-                //xmlReader.readNext();
             } else if (xmlReader.name() == "dayschedule") {
-                qDebug() << "read dayschedule";
                 DaySchedule* ds = new DaySchedule(xmlReader);
                 days.push_back(QSharedPointer<DaySchedule>(ds));
-                xmlReader.readNext();
             } else {
                 Helper::skipUnknownElements(xmlReader);
             }

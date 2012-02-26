@@ -1,5 +1,10 @@
 #include "duration.h"
 
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+
+#include "helpers.h"
+
 Duration::Duration() : hour(0), min(0), sec(0)
 {}
 
@@ -34,7 +39,7 @@ Duration::Duration(QXmlStreamReader &xmlReader) {
                 sec = xmlReader.readElementText().toInt();
                 xmlReader.readNext();
             } else {
-                // skipUnknownElement(xmlReader);
+                Helper::skipUnknownElements(xmlReader);
             }
         } else {
             xmlReader.readNext();

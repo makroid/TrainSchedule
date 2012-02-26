@@ -1,18 +1,19 @@
 #include "newSessionWidget.h"
 #include "session.h"
 #include "sessionType.h"
-#include "sessionsWidget.h"
 #include "duration.h"
 #include "distance.h"
+#include "sessionsDialog.h"
+#include "mapAndControlWidget.h"
 
 #include <QSharedPointer>
 #include <QtDebug>
 
-NewSessionWidget::NewSessionWidget(DaySchedule* ds, MapWidget* const mw, MapControlWidget* const mcw, SessionsWidget *parent)
+NewSessionWidget::NewSessionWidget(DaySchedule* ds, MapAndControlWidget* const macw, SessionsWidget *parent)
     : QWidget(parent),
       daySdl(ds),
-      mapWidget(mw),
-      mapControlWidget(mcw),
+      mapWidget(macw->getMapWidget()),
+      mapControlWidget(macw->getMapControlWidget()),
       sessionsWidget(parent)
 {
     createWidgets();

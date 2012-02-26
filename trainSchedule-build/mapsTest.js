@@ -10,11 +10,11 @@ var curPosMarker = null;
 var startLocation = new google.maps.LatLng(48.15494, 12.56468);;
 
 function setCenter(lat, lng) {
-  startLocation = new google.maps.LatLng(lat, lng);
+    startLocation = new google.maps.LatLng(lat, lng);
 };
 
 function moveToCenter() {
-  map.setCenter(startLocation);
+    map.setCenter(startLocation);
 };
 
 ///////////////////////////////////////////////////////////////////
@@ -33,280 +33,425 @@ function moveToCenter() {
 // all other function should be self explanatory
 //
 function MapRoute(aid) {
-//public:
-  if (aid === null) {
-    this.id = 0;
-  } else {
-    this.id = aid;
-  }
-  this.curPos = null;
-  this.prevPos = null;
-  
-//private:
-  var modus = 1;  // 1: runnerAutomatic, 2: bikerAutomatic, 3: manual
-  var distance = 0;
-  var historySteps = [];
-  var historyDists = []; 
-  var name = "";
-  var distMarkers = [];
-  var unit = 1000;
-  
-// setup polygon for route
-  var polyOptions = {
-    strokeColor: '#FE2E2E',
-    strokeOpacity: 0.9,
-    strokeWeight: 3,
-    clickable: false
-  };
-  this.poly = new google.maps.Polyline(polyOptions);
-  this.poly.setMap(map);
-
-//privileged methods:
-  this.getId = function() {
-    return this.id;
-  };
-  this.setId = function(aid) {
-    this.id = aid;
-  };
-  
-  this.getCurPos = function() {
-    return [this.curPos.lat(), this.curPos.lng()];
-  };
-  
-  this.setCurPos = function(acurPos) {  
-    this.curPos = acurPos;
-  };
-  
-  this.getPrevPos = function() {
-    return [this.prevPos.lat(), this.prevPos.lng()];
-  };
-  
-  this.setPrevPos = function(aprevPos) {
-    this.prevPos = aprevPos;
-  };
-  
-  this.getName = function() {
-    return name;
-  };
-  
-  this.setName = function(aname) {
-    name = aname;
-  };
-  
-  this.getModus = function() {
-    return modus;
-  };
-  
-  this.setModus = function(amodus) {
-    //if (amodus != 1 || amodus != 2) { return; }
-    modus = amodus;
-  };
-  
-  this.getHistorySteps = function() {
-    return historySteps;
-  };
-  
-  this.setHistorySteps = function(ahistorySteps) {
-    historySteps = ahistorySteps;
-  };
-  
-  this.getHistoryDists = function() {
-    return historyDists;
-  };
-  
-  this.setHistoryDists = function(ahistoryDists) {
-    historyDists = ahistoryDists;
-  };
-  
-  
-  this.updateHistory = function(aidx, adist) {
-    historySteps.push(aidx);
-    historyDists.push(adist);
-  };
-  
-  this.getDistance = function() {
-    return distance;
-  };
-  
-  this.setDistance = function(adist) {
-    distance = adist;
-    // this is a QT object which was made available via QT's addToJavaScriptWindowObject function
-    QTDistanceSpinBoxNew.setValue(distance/1000);
-    QTDistanceSpinBoxExist.setValue(distance/1000);
-  };
-  
-  this.addToDistance = function(adist) {
-    this.setDistance(distance + adist);
-  };
-  
-  this.addDistMarker = function(amarker) {
-    distMarkers.push(amarker);
-  };
-  
-  this.removeAllMarkers = function() {
-    for (var i=0; i<distMarkers.length; i++) {
-      distMarkers[i].setMap(null);
+    //public:
+    if (aid === null) {
+	this.id = 0;
+    } else {
+	this.id = aid;
     }
-  };
-  
-  this.undoStep = function() {
-    if (historySteps.length == 1) {
-      return false;
-    }
-    // undo polyline
-    var endIdx = historySteps[historySteps.length-1];
-    var startIdx = historySteps[historySteps.length-2];
-    var numToRemove = endIdx - startIdx;
-    for (var i=0; i<numToRemove; i++) {
-      this.poly.getPath().pop();
-    }
-    historySteps.pop();
-    var dist = historyDists.pop();
-    // undo distance markers
-    var numToRemoveMarkers = Math.floor(distance / unit) - Math.floor((distance-dist) / unit);
-    for (var i=0; i<numToRemoveMarkers; i++) {
-      var amarker = distMarkers.pop();
-      amarker.setMap(null);
-    }
-    // set distance and positions
-    this.setDistance(distance - dist);
-    this.prevPos = this.getLastPolyPos(); 
-    this.curPos = this.getLastPolyPos();
-    curPosMarker.setPosition(this.curPos);
-    return true;
-  };
-  
-  // poly: the polygon on which to set the distance markers
-  // distToPolyStart: the current distance at the first point in "poly"
-  this.updateDistMarkers = function(poly, distToPolyStart) { 
-    var prevDist = distToPolyStart;
-    var curDist = distToPolyStart;
+    this.curPos = null;
+    this.prevPos = null;
     
-    // go along the polyline
-    for (var i=1; i<poly.length; i++) {
-      var from = poly[i-1];
-      var to = poly[i];
-      var dist = distanceBetween(from, to);
-      curDist += dist;
-      
-      // decide if there are markers on the current edge
-      var numDistMarkers = Math.floor(curDist / unit) - Math.floor(prevDist / unit);
-      if (numDistMarkers > 0) {
-        var heading = google.maps.geometry.spherical.computeHeading(from, to);
-        // compute offset from 'from' to (first) marker
-        var offdist = Math.ceil(Math.max(0.0001,prevDist) / unit) * unit - prevDist;
-        var startLabel = Math.ceil(Math.max(0.0001,prevDist) / unit);
-        // draw marker(s)
-      	for (var j=0; j<numDistMarkers; j++) {
-      	  // find coordinates of marker
-	  var offset = google.maps.geometry.spherical.computeOffset(from, offdist + j*unit, heading);
-	  var label = startLabel + j;
-	  var image = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=' + label + '|FF0000|0000FF';
-	  var marker = new google.maps.Marker({
-            position: offset,
-            map: map,
-            icon: image
-  	  });
-  	  distMarkers.push(marker);
-        }
-      }
-      prevDist = curDist;
-    }
-  };
-  
-  this.addSinglePosToPoly = function(pos) {
-    var path = this.poly.getPath();
-    path.push(pos); 
-  };
+    //private:
+    var modus = 1;  // 1: runnerAutomatic, 2: bikerAutomatic, 3: manual
+    var distance = 0;
+    var historySteps = [];
+    var historyDists = []; 
+    var name = "";
+    var distMarkers = [];
+    var unit = 1000;
+    
+    // setup polygon for route
+    var polyOptions = {
+	strokeColor: '#FE2E2E',
+	strokeOpacity: 0.9,
+	strokeWeight: 3,
+	clickable: false
+    };
+    this.poly = new google.maps.Polyline(polyOptions);
+    this.poly.setMap(map);
 
-  this.getLastPolyPos = function() {
-    return this.poly.getPath().getAt(this.poly.getPath().length-1);
-  };
-  
-  this.getFirstPolyPos = function() {
-    return this.poly.getPath().getAt(0);
-  }
-  
-  // return MVCarray of LatLngs-objects
-  this.getPolylineLatLng = function() {
-    return this.poly.getPath();
-  }
+    //privileged methods:
+    this.getId = function() {
+	return this.id;
+    };
+    this.setId = function(aid) {
+	this.id = aid;
+    };
+    
+    this.getCurPos = function() {
+	return [this.curPos.lat(), this.curPos.lng()];
+    };
+    
+    this.setCurPos = function(acurPos) {  
+	QTMyRoutesTable.setPosAndSort(acurPos.lat(), acurPos.lng());
+	this.curPos = acurPos;
+    };
+    
+    this.getPrevPos = function() {
+	return [this.prevPos.lat(), this.prevPos.lng()];
+    };
+    
+    this.setPrevPos = function(aprevPos) {
+	this.prevPos = aprevPos;
+    };
+    
+    this.getName = function() {
+	return name;
+    };
+    
+    this.setName = function(aname) {
+	name = aname;
+    };
+    
+    this.getModus = function() {
+	return modus;
+    };
+    
+    this.setModus = function(amodus) {
+	//if (amodus != 1 || amodus != 2) { return; }
+	modus = amodus;
+    };
+    
+    this.getHistorySteps = function() {
+	return historySteps;
+    };
+    
+    this.setHistorySteps = function(ahistorySteps) {
+	historySteps = ahistorySteps;
+    };
+    
+    this.getHistoryDists = function() {
+	return historyDists;
+    };
+    
+    this.setHistoryDists = function(ahistoryDists) {
+	historyDists = ahistoryDists;
+    };
+    
+    
+    this.updateHistory = function(aidx, adist) {
+	historySteps.push(aidx);
+	historyDists.push(adist);
+    };
+    
+    this.getDistance = function() {
+	return distance;
+    };
+    
+    this.setDistance = function(adist) {
+	distance = adist;
+	// this is a QT object which was made available via QT's addToJavaScriptWindowObject function
+	// see NewSessionWidget and ExistingSessionsWidget
+	QTDistanceSpinBoxNew.setValue(distance/1000);
+	QTDistanceSpinBoxExist.setValue(distance/1000);
+    };
+    
+    this.addToDistance = function(adist) {
+	this.setDistance(distance + adist);
+    };
+    
+    this.addDistMarker = function(amarker) {
+	distMarkers.push(amarker);
+    };
+    
+    this.removeAllMarkers = function() {
+	for (var i=0; i<distMarkers.length; i++) {
+	    distMarkers[i].setMap(null);
+	}
+    };
+    
+    this.undoStep = function() {
+	if (historySteps.length == 1) {
+	    return false;
+	}
+	// undo polyline
+	var endIdx = historySteps[historySteps.length-1];
+	var startIdx = historySteps[historySteps.length-2];
+	var numToRemove = endIdx - startIdx;
 
-  // return standard JavaScript array of lat,lng entries (doubles)
-  this.getPolyline = function() {
-    var ps = [];
-    var path = this.poly.getPath();
-    for (var i=0; i<path.length; i++) {
-      ps.push(path.getAt(i).lat(), path.getAt(i).lng());
-    }
-    return ps;
-  };
+	// could be implemented via removeEndPoints
+	// this.removeEndPoints(numToRemove);
 
-// TODO: split up responsibilities of this function
-  this.setPolyline = function(apoly) {
-    this.poly.setPath(apoly);
-    if (apoly.length > 0) {
-      // set start marker
-      var start = this.poly.getPath().getAt(0);
-      var marker = new google.maps.Marker({
-        position: start,
-        map: map,
-        title:"start"
-      });
-      distMarkers.push(marker);
-      curPosMarker.setPosition(this.getLastPolyPos());
-      map.setCenter(start);
+	// but this variant is faster - replace by upper version?
+	for (var i=0; i<numToRemove; i++) {
+	  this.poly.getPath().pop();
+	}
+	historySteps.pop();
+	var distOfUndo = historyDists.pop();
+	// undo distance markers
+	var numToRemoveMarkers = Math.floor(distance / unit) - Math.floor((distance-distOfUndo) / unit);
+	for (var i=0; i<numToRemoveMarkers; i++) {
+	  var amarker = distMarkers.pop();
+	  amarker.setMap(null);
+	}
+	// set distance and positions
+	this.setDistance(distance - distOfUndo);
+	this.prevPos = this.getLastPolyPos(); 
+	this.setCurPos(this.getLastPolyPos());
+	curPosMarker.setPosition(this.curPos);
+	return true;
+    };
+
+    this.appendPathAndUpdate = function(appendPath, appendPathDist) {
+	if (typeof appendPathDist == 'undefined') {
+	    appendPathDist = distanceOfPolygon(appendPath);
+	}
+	var path = this.poly.getPath();
+	for (var i=0; i<appendPath.length; i++) {
+	    path.push(appendPath[i]);
+	}
+	    
+	// update distance markers
+	this.updateDistMarkers(appendPath, this.getDistance());
+	    
+	// update distance	
+	this.addToDistance(appendPathDist);
+	    
+	// update history
+	this.updateHistory(path.getLength(), appendPathDist);
+
+	// update positions
+	curPosMarker.setPosition(this.getLastPolyPos());
+	this.setCurPos(this.getLastPolyPos());
+	curRoute.prevPos = curRoute.curPos; 
+    };	
+
+    this.removeEndPoints = function(numEndPoints) {
+	if (numEndPoints >= this.poly.getPath().getLength()) {
+	    numEndPoints = this.poly.getPath().getLength() - 1;
+	}
+	if (numEndPoints == 0) {
+	    return true;
+	}
+	// remove steps from history
+	// until more than "numEndPoints" steps are removed 
+	// first historyStep (=1) is never removed
+	var numHistoryPops = 0;
+	var removedDistance = 0;
+	var steps = 0;
+	for (var i=historySteps.length-1; i>0; i--) {
+	    steps += historySteps[i] - historySteps[i-1];
+	    numHistoryPops++;
+	    if (numEndPoints <= steps) {
+		break;
+	    } 		
+	}
+	for (var i=0; i<numHistoryPops; i++) {
+	    historySteps.pop();
+	    removedDistance += historyDists.pop(); // 
+	}
+
+	//set new last history step
+	historySteps.push(this.poly.getPath().getLength()-numEndPoints);
+	var lastStepLen = this.routeLenBetween(historySteps[historySteps.length-2], historySteps[historySteps.length-1]); // length of new last step
+	historyDists.push(lastStepLen);
+
+	// remove end points from polygon
+	for (var i=0; i<numEndPoints; i++) {
+	    this.poly.getPath().pop();
+	}
+	
+	// update distance markers
+	var distOfRemovedEnd = removedDistance - lastStepLen;
+	// undo distance markers
+	var numToRemoveMarkers = Math.floor(distance / unit) - Math.floor((distance-distOfRemovedEnd) / unit);
+	for (var i=0; i<numToRemoveMarkers; i++) {
+	    var amarker = distMarkers.pop();
+	    amarker.setMap(null);
+	}
+	// set distance and positions
+	this.setDistance(distance - distOfRemovedEnd);
+	this.prevPos = this.getLastPolyPos(); 
+
+	return true;	
+    };
+
+    this.routeLenBetween = function(startIdx, endIdx) {
+	if (startIdx < 0 || endIdx < 0 || startIdx > endIdx || endIdx >= this.poly.getPath().getLength()) {
+	    return 0;
+	}
+	var dist = 0;
+	for (var i=startIdx+1; i<=endIdx; i++) {
+	    dist += distanceBetween(this.poly.getPath().getAt(i-1), this.poly.getPath().getAt(i));
+	}
+	return dist;
+    };
+    
+    // poly: the polygon on which to set the distance markers
+    // distToPolyStart: the current distance at the first point in "poly"
+    this.updateDistMarkers = function(poly, distToPolyStart) { 
+	var prevDist = distToPolyStart;
+	var curDist = distToPolyStart;
+	
+	// go along the polyline
+	for (var i=1; i<poly.length; i++) {
+	    var from = poly[i-1];
+	    var to = poly[i];
+	    var dist = distanceBetween(from, to);
+	    curDist += dist;
+	    
+	    // decide if there are markers on the current edge
+	    var numDistMarkers = Math.floor(curDist / unit) - Math.floor(prevDist / unit);
+	    if (numDistMarkers > 0) {
+		var heading = google.maps.geometry.spherical.computeHeading(from, to);
+		// compute offset from 'from' to (first) marker
+		var offdist = Math.ceil(Math.max(0.0001,prevDist) / unit) * unit - prevDist;
+		var startLabel = Math.ceil(Math.max(0.0001,prevDist) / unit);
+		// draw marker(s)
+      		for (var j=0; j<numDistMarkers; j++) {
+      		    // find coordinates of marker
+		    var offset = google.maps.geometry.spherical.computeOffset(from, offdist + j*unit, heading);
+		    var label = startLabel + j;
+		    var image = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=' + label + '|FF0000|0000FF';
+		    var marker = new google.maps.Marker({
+			position: offset,
+			map: map,
+			icon: image
+  		    });
+  		    distMarkers.push(marker);
+		}
+	    }
+	    prevDist = curDist;
+	}
+    };
+    
+    this.addSinglePosToPoly = function(pos) {
+	var path = this.poly.getPath();
+	path.push(pos); 
+    };
+
+    this.getLastPolyPos = function() {
+	return this.poly.getPath().getAt(this.poly.getPath().length-1);
+    };
+    
+    this.getFirstPolyPos = function() {
+	return this.poly.getPath().getAt(0);
     }
-  };
-  
-  this.setPolylineExt = function(apoly) {
-    this.poly.setPath(apoly);
-    if (apoly.length > 0) {
-      // set start marker
-      var start = this.poly.getPath().getAt(0);
-      var marker = new google.maps.Marker({
-        position: start,
-        map: map,
-        title:"start"
-      });
-      distMarkers.push(marker);
-      curPosMarker.setPosition(this.getLastPolyPos());
-      
-      // find bounds of route and pan
-      if (apoly.length > 1) {
-        var curBound = new google.maps.LatLngBounds();
-        for (var i=0; i<apoly.length; i++) {
-          curBound.extend(apoly[i]);
-        }
-        //alert(curBound.getNorthEast().lat() + "," + curBound.getNorthEast().lng() + "," + curBound.getSouthWest().lat() + "," + curBound.getSouthWest().lng());
-        map.fitBounds(curBound);
-      } else {
-	map.setCenter(start);
-      }
+    
+    // return MVCarray of LatLngs-objects
+    this.getPolylineLatLng = function() {
+	return this.poly.getPath();
     }
-  };
+
+    // return standard JavaScript array of lat,lng entries (doubles)
+    this.getPolyline = function() {
+	var ps = [];
+	var path = this.poly.getPath();
+	for (var i=0; i<path.length; i++) {
+	    ps.push(path.getAt(i).lat(), path.getAt(i).lng());
+	}
+	return ps;
+    };
+
+    // TODO: split up responsibilities of this function
+    this.setPolyline = function(apoly) {
+	this.poly.setPath(apoly);
+	if (apoly.length > 0) {
+	    // set start marker
+	    var start = this.poly.getPath().getAt(0);
+	    var marker = new google.maps.Marker({
+		position: start,
+		map: map,
+		title:"start"
+	    });
+	    distMarkers.push(marker);
+	    curPosMarker.setPosition(this.getLastPolyPos());
+	    map.setCenter(start);
+	}
+    };
+    
+    this.setPolylineAndFitBounds = function(apoly) {
+	this.poly.setPath(apoly);
+	if (apoly.length > 0) {
+	    // set start marker
+	    var start = this.poly.getPath().getAt(0);
+	    var marker = new google.maps.Marker({
+		position: start,
+		map: map,
+		title:"start"
+	    });
+	    distMarkers.push(marker);
+	    curPosMarker.setPosition(this.getLastPolyPos());
+	    
+	    // find bounds of route and pan
+	    if (apoly.length > 1) {
+		var curBound = new google.maps.LatLngBounds();
+		for (var i=0; i<apoly.length; i++) {
+		    curBound.extend(apoly[i]);
+		}
+		//alert(curBound.getNorthEast().lat() + "," + curBound.getNorthEast().lng() + "," + curBound.getSouthWest().lat() + "," + curBound.getSouthWest().lng());
+		map.fitBounds(curBound);
+	    } else {
+		map.setCenter(start);
+	    }
+	}
+    };
+
+    this.joinWithCurRoute = function(aRoutePoly, aRoutePolyDist) {
+	// calculate distance between 100? last points in curRoute and start of aRoutePoly
+	// if any distance is lower than 10m, then the corresponding point in curRoute is the 
+	// new end point of curRoute => append aRoutePoly to shortened curRoute
+	// if there is no such a point calculate route r from end point of curRoute to start point
+	// of aRoutePoly and append both r and apolyRoute to curRoute      
+
+	// calculate distance
+	if (typeof aRoutePolyDist == 'undefined') {
+	    aRoutePolyDist = distanceOfPolygon(aRoutePoly);
+	}
+
+	var maxNumEndPoints = 100;
+	var maxDistance = 15;
+
+	var curPolyLen = this.poly.getPath().getLength();
+	var numEndPoints = Math.min(maxNumEndPoints, curPolyLen);
+
+	// calculate distances between last 100 points and start of aRoutePoly
+	var endPoly = [];
+	for (var i=curPolyLen-numEndPoints; i<curPolyLen; i++) {
+	    endPoly.push(this.poly.getPath().getAt(i));
+	}
+
+	// find nearest point
+	var minDistance = 999999999;
+	var numPointsToRemove = 0;
+	for (var i=0; i<endPoly.length; i++) {
+	    var dist = distanceBetween(aRoutePoly[0], endPoly[i]);
+	    if (dist <  maxDistance && dist < minDistance) {
+		minDistance = dist;
+		numPointsToRemove = endPoly.length - i - 1;
+	    }	   
+	    // distance is smaller than 1meter?
+	    if (dist <= 1) {
+		break;
+	    }
+	}
+	// if there is a valid nearest point, i.e. an overlap
+	if (minDistance < maxDistance) {
+	    // remove all points on current route till the nearest one found above
+	    this.removeEndPoints(numPointsToRemove);
+	    // append "aRoutePoly" to curRoute (add minDist for a correct distance)
+	    this.appendPathAndUpdate(aRoutePoly, aRoutePolyDist + minDistance);
+	} else {
+	    // no valid nearest point:
+	    // calculate route R from end of curRoute to start of "aRoutePoly"
+	    // and append both R and "aRoutePoly" to curRoute
+	    calcRoute(curRoute.getLastPolyPos(), aRoutePoly[0], aRoutePoly, aRoutePolyDist); 
+	}
+	map.setCenter(aRoutePoly[aRoutePoly.length-1]);
+    };
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // this is the initializer for the pedometer widget 
 function initialize() {
-  // Instantiate a directions service.
-  directionsService = new google.maps.DirectionsService();
-  // Create a map and center it on Munich
-  //var munich = new google.maps.LatLng(48.15494, 11.56468);
-  var myOptions = {
-    zoom: 15,
-    backgroundColor: 'grey',
-    mapTypeId: google.maps.MapTypeId.ROADMAP,
-    center: startLocation,
-    disableDoubleClickZoom: true,
-    draggableCursor: 'pointer'
-  };
-  map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-  
-  google.maps.event.addListener(map, 'dblclick', function(event) {
-    handleMapDblClick(event.latLng);
-  });
+    // Instantiate a directions service.
+    directionsService = new google.maps.DirectionsService();
+    // Create a map and center it on Munich
+    //var munich = new google.maps.LatLng(48.15494, 11.56468);
+    var myOptions = {
+	zoom: 15,
+	backgroundColor: 'grey',
+	mapTypeId: google.maps.MapTypeId.ROADMAP,
+	center: startLocation,
+	disableDoubleClickZoom: true,
+	draggableCursor: 'pointer'
+    };
+    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    
+    google.maps.event.addListener(map, 'dblclick', function(event) {
+	handleMapDblClick(event.latLng);
+    });
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -314,228 +459,260 @@ function initialize() {
 var startLocationMarker;
 
 function initializeStartPosition() {
-  var myOptions = {
-    zoom: 15,
-    backgroundColor: 'grey',
-    mapTypeId: google.maps.MapTypeId.ROADMAP,
-    center: startLocation,
-    disableDoubleClickZoom: true,
-    draggableCursor: 'pointer'
-  };
+    var myOptions = {
+	zoom: 15,
+	backgroundColor: 'grey',
+	mapTypeId: google.maps.MapTypeId.ROADMAP,
+	center: startLocation,
+	disableDoubleClickZoom: true,
+	draggableCursor: 'pointer'
+    };
 
-  map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-  
-  // set startlocation marker
-  startLocationMarker = new google.maps.Marker({
-    position: startLocation,
-    map: map,
-    title:"start"
-  });
-  
-  google.maps.event.addListener(map, 'dblclick', function(event) {
-    handleMapDblClickStartPosition(event.latLng);
-  });
+    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    
+    // set startlocation marker
+    startLocationMarker = new google.maps.Marker({
+	position: startLocation,
+	map: map,
+	title:"start"
+    });
+    
+    google.maps.event.addListener(map, 'dblclick', function(event) {
+	handleMapDblClickStartPosition(event.latLng);
+    });
 }
 
 function handleMapDblClickStartPosition(pos) {
-  // this are QT objects which were made available via QT's addToJavaScriptWindowObject function
-  // round
-  lat = pos.lat();
-  lng = pos.lng();
-  lat *= 1000000;
-  lat = Math.round(lat);
-  lat /= 1000000;
-  lng *= 1000000;
-  lng = Math.round(lng);
-  lng /= 1000000;
-  
-  QTLatLineEdit.setText(lat);
-  QTLngLineEdit.setText(lng);
-  
-  // update marker position
-  startLocationMarker.setPosition(pos);
-  
-  map.setCenter(pos);
+    // this are QT objects which were made available via QT's addToJavaScriptWindowObject function
+    // round
+    lat = pos.lat();
+    lng = pos.lng();
+    lat *= 1000000;
+    lat = Math.round(lat);
+    lat /= 1000000;
+    lng *= 1000000;
+    lng = Math.round(lng);
+    lng /= 1000000;
+    
+    QTLatLineEdit.setText(lat);
+    QTLngLineEdit.setText(lng);
+    
+    // update marker position
+    startLocationMarker.setPosition(pos);
+    
+    map.setCenter(pos);
 }
 /////////////////////////////////////////////////////////////////////////////////////
 
 function getNextFreeId() {
-  var nfi = 0;
-  for (var i=0; i<routes.length; i++) {
-    if (routes[i].id > nfi) { nfi = routes[i].id; }
-  }
-  return nfi+1;
+    var nfi = 0;
+    for (var i=0; i<routes.length; i++) {
+	if (routes[i].id > nfi) { nfi = routes[i].id; }
+    }
+    return nfi+1;
 }
 
 // TODO: pass id parameter, check if route id already exists
 // if yes: somehow load this route
 function startNewRoute() {
-  var nfid = getNextFreeId();
-  var aroute = new MapRoute(nfid);
-  curRoute = aroute;
-  routes.push(aroute);
-  
-  return nfid;
+    var nfid = getNextFreeId();
+    var aroute = new MapRoute(nfid);
+    curRoute = aroute;
+    routes.push(aroute);
+    
+    return nfid;
 }
 
 function startNewSingleRoute(aid) {
-  var id = aid
-  if (aid === null) {
-    id = getNextFreeId();
-  }
-  deleteCurRoute();
-  curRoute = new MapRoute(id);
-  
-  curPosMarker = new google.maps.Marker({
-      map: map,
-      title:"start"
+    var id = aid
+    if (typeof aid == 'undefined') {
+	id = getNextFreeId();
+    }
+    deleteCurRoute();
+    curRoute = new MapRoute(id);
+    
+    curPosMarker = new google.maps.Marker({
+	map: map,
+	title:"start"
     });
-  
-  return id;
+    return id;
 }
 
 function deleteRoute(aid) {
-  for (var i=0; i<routes.length; i++) {
-    if (routes[i].id == aid) {
-      // remove all markers and polyline
-      routes[i].removeAllMarkers();
-      routes[i].poly.setMap(null);
-      // remove this route
-      routes.splice(i, 1);
-      if (aid == curRoute.id) {
-        curRoute = null;
-      }
-      return true;
+    for (var i=0; i<routes.length; i++) {
+	if (routes[i].id == aid) {
+	    // remove all markers and polyline
+	    routes[i].removeAllMarkers();
+	    routes[i].poly.setMap(null);
+	    // remove this route
+	    routes.splice(i, 1);
+	    if (aid == curRoute.id) {
+		curRoute = null;
+	    }
+	    return true;
+	}
     }
-  }
-  return false;
+    return false;
 }
 
 function deleteCurRoute() {
-  if (curRoute === null) { return false; }
-  curRoute.setDistance(0);
-  curRoute.removeAllMarkers();
-  curRoute.poly.setMap(null);
-  curRoute = null;
-  curPosMarker.setMap(null);
-  return true;
+    if (curRoute === null) { return false; }
+    curRoute.setDistance(0);
+    curRoute.removeAllMarkers();
+    curRoute.poly.setMap(null);
+    curRoute = null;
+    curPosMarker.setMap(null);
+    return true;
 }
 
 function isCurRouteNull() {
-  if (curRoute === null) {
-    return 1;
-  }
-  return 0;
+    if (curRoute === null) {
+	return 1;
+    }
+    return 0;
 }
 
 function switchToRoute(aid) {
-  for (var i=0; i<routes.length; i++) {
-    if (routes[i].id == aid) {
-      curRoute = routes[i];
-      return true;
+    for (var i=0; i<routes.length; i++) {
+	if (routes[i].id == aid) {
+	    curRoute = routes[i];
+	    return true;
+	}
     }
-  }
-  return false;
+    return false;
 }
 
-function handleMapDblClick(pos) {
-  if (curRoute === null) { map.setCenter(pos); return; }
-  // first point
-  if (curRoute.curPos === null) {
-    curRoute.prevPos = pos;
-    curRoute.curPos = pos;
-    curRoute.addSinglePosToPoly(pos);
-    curRoute.updateHistory(1, 0);
-    var startMarker = new google.maps.Marker({
-      position: curRoute.curPos,
-      map: map,
-      title:"start"
+function handleMapDblClick(dblClkPos) {
+    if (curRoute === null) { map.setCenter(dblClkPos); return; }
+    // first point
+    if (curRoute.curPos === null) {
+	curRoute.prevPos = dblClkPos;
+	curRoute.setCurPos(dblClkPos);
+	curRoute.addSinglePosToPoly(dblClkPos);
+	curRoute.updateHistory(1, 0);
+	var startMarker = new google.maps.Marker({
+	    position: curRoute.curPos,
+	    map: map,
+	    title:"start"
+	});
+	curRoute.addDistMarker(startMarker);
+    } 
+    else { 
+	// continue existing route
+	var oldPathLen = curRoute.poly.getPath().length;
+
+	// manual or automatic route to curPos
+	if (curRoute.getModus() == 1 || curRoute.getModus() == 2) {  
+	    calcRoute(curRoute.prevPos, dblClkPos);
+	} else if (curRoute.getModus() == 3) {
+	    // manual mode
+	    curRoute.setCurPos(dblClkPos);
+	    curRoute.prevPos = curRoute.curPos;
+	    curPosMarker.setPosition(dblClkPos);
+
+	    curRoute.addSinglePosToPoly(curRoute.curPos);
+	    var dist = distanceBetween(curRoute.prevPos, curRoute.curPos);
+	    var edge = [curRoute.prevPos, curRoute.curPos];
+	    
+	    curRoute.updateDistMarkers(edge, curRoute.getDistance());
+	    curRoute.addToDistance(dist);
+	    curRoute.updateHistory(oldPathLen+1, dist);
+	}  
+    }
+    map.setCenter(dblClkPos);
+}
+
+function calcRoute(start, end, appendPath, appendPathDist) { 
+    // create a DirectionsRequest using WALKING or BICYCLING directions.
+    var request;
+    
+    if (curRoute.getModus() == 2) {
+	request = {
+	    origin: start,
+	    destination: end,
+	    travelMode: google.maps.DirectionsTravelMode.DRIVING // why does BICYCLING not work?
+	};
+    } else {
+	request = {
+	    origin: start,
+	    destination: end,
+	    travelMode: google.maps.DirectionsTravelMode.WALKING
+	};
+    }
+
+    // Route the directions
+    directionsService.route(request, function(response, status) {
+	if (status == google.maps.DirectionsStatus.OK) {
+	    // get all latlngs of path
+	    var routePath = getAllSteps(response);	    
+	    var routeDist = response.routes[0].legs[0].distance.value;
+
+	    // if an additional path is given, append it and update distance
+	    if (typeof appendPath != 'undefined') {
+		for (var i=0; i<appendPath.length; i++) {
+		    routePath.push(appendPath[i]);
+		}
+		if (typeof appendPathDist != 'undefined') {
+		    routeDist += appendPathDist;
+		} else {
+		    routeDist += distanceOfPolygon(appendPath);
+		}
+	    }
+
+	    curRoute.appendPathAndUpdate(routePath, routeDist);
+	}
     });
-    curRoute.addDistMarker(startMarker);
-  } 
-  else { 
-    // continue existing route
-    var oldPathLen = curRoute.poly.getPath().length;
-    curRoute.curPos = pos;
-
-    // manual or automatic route to curPos
-    if (curRoute.getModus() == 1 || curRoute.getModus() == 2) {  
-      calcRoute(curRoute.prevPos, curRoute.curPos);
-    } else if (curRoute.getModus() == 3) {
-      curRoute.addSinglePosToPoly(curRoute.curPos);
-      var dist = distanceBetween(curRoute.prevPos, curRoute.curPos);
-      var edge = [curRoute.prevPos, curRoute.curPos];
-      
-      curRoute.updateDistMarkers(edge, curRoute.getDistance());
-      curRoute.addToDistance(dist);
-      curRoute.updateHistory(oldPathLen+1, dist);
-    }
-    curPosMarker.setPosition(pos);
-    curRoute.prevPos = curRoute.curPos;   
-  }
-  map.setCenter(pos);
-}
-
-function calcRoute(start, end) { 
-  // create a DirectionsRequest using WALKING or BICYCLING directions.
-  var request;
-  
-  if (curRoute.getModus() == 2) {
-    request = {
-      origin: start,
-      destination: end,
-      travelMode: google.maps.DirectionsTravelMode.DRIVING // why does BICYCLING not work?
-    };
-  } else {
-    request = {
-      origin: start,
-      destination: end,
-      travelMode: google.maps.DirectionsTravelMode.WALKING
-    };
-  }
-
-  // Route the directions
-  directionsService.route(request, function(response, status) {
-    if (status == google.maps.DirectionsStatus.OK) {
-      // update path
-      var pathNewPart = getAllSteps(response);
-      var path = curRoute.poly.getPath();
-      for (var i=0; i<pathNewPart.length; i++) {
-        path.push(pathNewPart[i]);
-      }
-      
-      // update distance markers
-      curRoute.updateDistMarkers(pathNewPart, curRoute.getDistance());
-     
-      // update distance
-      var dist = response.routes[0].legs[0].distance.value;
-      curRoute.addToDistance(dist);
-     
-      // update history
-      curRoute.updateHistory(path.length, dist); 
-    }
-  });
 }
 
 function getAllSteps(directionResult) {
-  var myLegs = directionResult.routes[0].legs[0];
-  var idx = 0;
-  var allSteps = [];
+    var myLegs = directionResult.routes[0].legs[0];
+    var idx = 0;
+    var allSteps = [];
 
-  for (var i = 0; i < myLegs.steps.length; i++) {
-     var myStep = myLegs.steps[i];
-     //alert("myStep.path.length=" + myStep.path.length);
-     for (var j = 0; j < myStep.path.length; j++) {
-	allSteps[idx] = myStep.path[j];
-      //  alert("allSteps[" + idx + "]=" + myStep.path[j]);
-        idx++;
-     }
-  }
-  return allSteps;
+    for (var i = 0; i < myLegs.steps.length; i++) {
+	var myStep = myLegs.steps[i];
+	//alert("myStep.path.length=" + myStep.path.length);
+	for (var j = 0; j < myStep.path.length; j++) {
+	    allSteps[idx] = myStep.path[j];
+	    //  alert("allSteps[" + idx + "]=" + myStep.path[j]);
+            idx++;
+	}
+    }
+    return allSteps;
 }
 
+
+// returns distance in meters
 function distanceBetween(latLngFrom,latLngTo) {
     return google.maps.geometry.spherical.computeDistanceBetween(latLngFrom, latLngTo);
+}
+
+function distanceOfPolygon(apoly) {
+    var dist = 0;
+    for (var i=1; i<apoly.length; i++) {
+	dist += distanceBetween(apoly[i-1], apoly[i]);
+    }
+    return dist;
+}
+
+function geocodeAddressForLocation(location) {
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({'latLng': location}, function(results, status) {
+	if (status == google.maps.GeocoderStatus.OK) {
+	    if (results[1]) {
+		alert(results[1].formatted_address);
+	    }
+	}
+    });
+}
+
+function geocodeLocationForAddress(address) {
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({'address': address}, function(results, status) {
+	if (status == google.maps.GeocoderStatus.OK) {
+	    map.setCenter(results[0].geometry.location);
+	}
+    });
 }
 
 
@@ -543,136 +720,136 @@ function distanceBetween(latLngFrom,latLngTo) {
 // functions for generating kml file
 
 function kmlHeader() {
-  var kmlheader = [
-    "<?xml version='1.0' encoding='UTF-8'?>\n",
-    "<kml xmlns='http://www.opengis.net/kml/2.2'\n",
-    " xmlns:gx='http://www.google.com/kml/ext/2.2'>\n",
-    "<Document>\n",
-    "  <name>A tour and some features</name>\n",
-    "  <open>1</open>\n",
-    "  <gx:Tour>\n",
-    "    <name>Play Tour!</name>\n",
-    "    <gx:Playlist>\n"
-  ].join("");
+    var kmlheader = [
+	"<?xml version='1.0' encoding='UTF-8'?>\n",
+	"<kml xmlns='http://www.opengis.net/kml/2.2'\n",
+	" xmlns:gx='http://www.google.com/kml/ext/2.2'>\n",
+	"<Document>\n",
+	"  <name>A tour and some features</name>\n",
+	"  <open>1</open>\n",
+	"  <gx:Tour>\n",
+	"    <name>Play Tour!</name>\n",
+	"    <gx:Playlist>\n"
+    ].join("");
 
-  return kmlheader;
+    return kmlheader;
 }
 
 function kmlEnd() {
-  var kmlPoly = kmlPolyline(); 
-  var kmlend = [
-    "    </gx:Playlist>\n",
-    "  </gx:Tour>\n",
-    kmlPoly,
-    "</Document>\n",
-    "</kml>\n"
-  ].join("");
-  
-  return kmlend;
+    var kmlPoly = kmlPolyline(); 
+    var kmlend = [
+	"    </gx:Playlist>\n",
+	"  </gx:Tour>\n",
+	kmlPoly,
+	"</Document>\n",
+	"</kml>\n"
+    ].join("");
+    
+    return kmlend;
 }
 
 function kmlFlyToStart(altitude) {
-  var kmlfts = [
-    "<gx:FlyTo>\n",
-    "  <gx:duration>5</gx:duration>\n",
-    "  <gx:flyToMode>bounce</gx:flyToMode>\n",
-    "  <Camera>\n",
-    "    <longitude>" + curRoute.getFirstPolyPos().lng() + "</longitude>",
-    "    <latitude>" + curRoute.getFirstPolyPos().lat() + "</latitude>\n",
-    "    <altitude>" + altitude + "</altitude>\n",
-    "    <altitudeMode>absolute</altitudeMode>\n",
-    "  </Camera>\n",
-    "</gx:FlyTo>\n"
-  ].join("");
-   
-   return kmlfts;
+    var kmlfts = [
+	"<gx:FlyTo>\n",
+	"  <gx:duration>5</gx:duration>\n",
+	"  <gx:flyToMode>bounce</gx:flyToMode>\n",
+	"  <Camera>\n",
+	"    <longitude>" + curRoute.getFirstPolyPos().lng() + "</longitude>",
+	"    <latitude>" + curRoute.getFirstPolyPos().lat() + "</latitude>\n",
+	"    <altitude>" + altitude + "</altitude>\n",
+	"    <altitudeMode>absolute</altitudeMode>\n",
+	"  </Camera>\n",
+	"</gx:FlyTo>\n"
+    ].join("");
+    
+    return kmlfts;
 }
 
 function kmlWait(duration) {
-  var kmlwait = [
-    "<gx:Wait>\n",
-    "  <gx:duration>" + duration + "</gx:duration>\n",
-    "</gx:Wait>\n"
-  ].join("");
+    var kmlwait = [
+	"<gx:Wait>\n",
+	"  <gx:duration>" + duration + "</gx:duration>\n",
+	"</gx:Wait>\n"
+    ].join("");
 
-  return kmlwait;
+    return kmlwait;
 }
 
 function kmlFlyTo(duration, lat, lng, altitude, range) {
-  var kmlflyto = [
-    "<gx:FlyTo>\n",
-    "  <gx:duration>" + duration + "</gx:duration>\n",
-    "  <gx:flyToMode>smooth</gx:flyToMode>\n",
-    "  <LookAt>\n",
-    "    <longitude>" + lng + "</longitude>\n",
-    "    <latitude>" + lat + "</latitude>\n",
-    "    <altitude>" + altitude + "</altitude>\n",
-    "    <range>" + range + "</range>\n",
-    "    <altitudeMode>relativeToGround</altitudeMode>\n",
-    "  </LookAt>\n",
-    "</gx:FlyTo>\n"
-  ].join("");
-  
-  return kmlflyto;
+    var kmlflyto = [
+	"<gx:FlyTo>\n",
+	"  <gx:duration>" + duration + "</gx:duration>\n",
+	"  <gx:flyToMode>smooth</gx:flyToMode>\n",
+	"  <LookAt>\n",
+	"    <longitude>" + lng + "</longitude>\n",
+	"    <latitude>" + lat + "</latitude>\n",
+	"    <altitude>" + altitude + "</altitude>\n",
+	"    <range>" + range + "</range>\n",
+	"    <altitudeMode>relativeToGround</altitudeMode>\n",
+	"  </LookAt>\n",
+	"</gx:FlyTo>\n"
+    ].join("");
+    
+    return kmlflyto;
 }
 
 function kmlPolyline() {
-  var kmlpoly = [
-    "<Style id='mystyle'>",
-    "  <LineStyle>",
-    "    <color>ff0000ff</color>",
-    "    <width>6</width>",
-    "  </LineStyle>",
-    "  <PolyStyle>",
-    "    <color>7f00ff00</color>",
-    "  </PolyStyle>",
-    "</Style>",
-    "<Placemark>",
-    "  <name>TrainingTour</name>",
-    "  <description>Training Tour exorted from Training Schedule</description>",
-    "  <styleUrl>#mystyle</styleUrl>",
-    "  <LineString>",
-    "    <extrude>0</extrude>",
-    "    <tessellate>1</tessellate>",
-    "    <coordinates>\n"
-  ].join("\n");
-  
-  var routeLatLngs = curRoute.getPolylineLatLng();
-  var routeKmlCoordinates = "";
-  for (var i=0; i<routeLatLngs.getLength(); i++) {
-    routeKmlCoordinates += routeLatLngs.getAt(i).lng() + "," + routeLatLngs.getAt(i).lat() + "\n";
-  }
-  kmlpoly += routeKmlCoordinates;
+    var kmlpoly = [
+	"<Style id='mystyle'>",
+	"  <LineStyle>",
+	"    <color>ff0000ff</color>",
+	"    <width>6</width>",
+	"  </LineStyle>",
+	"  <PolyStyle>",
+	"    <color>7f00ff00</color>",
+	"  </PolyStyle>",
+	"</Style>",
+	"<Placemark>",
+	"  <name>TrainingTour</name>",
+	"  <description>Training Tour exorted from Training Schedule</description>",
+	"  <styleUrl>#mystyle</styleUrl>",
+	"  <LineString>",
+	"    <extrude>0</extrude>",
+	"    <tessellate>1</tessellate>",
+	"    <coordinates>\n"
+    ].join("\n");
+    
+    var routeLatLngs = curRoute.getPolylineLatLng();
+    var routeKmlCoordinates = "";
+    for (var i=0; i<routeLatLngs.getLength(); i++) {
+	routeKmlCoordinates += routeLatLngs.getAt(i).lng() + "," + routeLatLngs.getAt(i).lat() + "\n";
+    }
+    kmlpoly += routeKmlCoordinates;
 
-  var kmlpolyend = [
-    "    </coordinates>",
-    "  </LineString>",
-    "</Placemark>\n"
-  ].join("\n");
-  
-  kmlpoly += kmlpolyend;
-  return kmlpoly;
+    var kmlpolyend = [
+	"    </coordinates>",
+	"  </LineString>",
+	"</Placemark>\n"
+    ].join("\n");
+    
+    kmlpoly += kmlpolyend;
+    return kmlpoly;
 }
 
 function generateKmlCode(totalDuration, altitude, range) {
-  var result = "";
-  
-  if (totalDuration <= 1 || curRoute === null) { return result; }
-  
-  var dist = curRoute.getDistance(); // in meter
-  var speed = dist / totalDuration; // in meter/s
+    var result = "";
+    
+    if (totalDuration <= 1 || curRoute === null) { return result; }
+    
+    var dist = curRoute.getDistance(); // in meter
+    var speed = dist / totalDuration; // in meter/s
 
-  result += kmlHeader();
-  result += kmlFlyToStart(altitude);
-  result += kmlWait(1);
-  
-  var routeLatLngs = curRoute.getPolylineLatLng();
-  for (var i=1; i<routeLatLngs.getLength(); i++) {
-    var dist = distanceBetween(routeLatLngs.getAt(i-1), routeLatLngs.getAt(i)); // in meter
-    var duration = dist / speed;
-    result += kmlFlyTo(duration, routeLatLngs.getAt(i).lat(), routeLatLngs.getAt(i).lng(), altitude, range);
-  }
-  result += kmlEnd();
-  
-  return result;
+    result += kmlHeader();
+    result += kmlFlyToStart(altitude);
+    result += kmlWait(1);
+    
+    var routeLatLngs = curRoute.getPolylineLatLng();
+    for (var i=1; i<routeLatLngs.getLength(); i++) {
+	var dist = distanceBetween(routeLatLngs.getAt(i-1), routeLatLngs.getAt(i)); // in meter
+	var duration = dist / speed;
+	result += kmlFlyTo(duration, routeLatLngs.getAt(i).lat(), routeLatLngs.getAt(i).lng(), altitude, range);
+    }
+    result += kmlEnd();
+    
+    return result;
 }

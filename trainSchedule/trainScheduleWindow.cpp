@@ -1,5 +1,6 @@
 #include "trainScheduleWindow.h"
 #include "weekMap.h"
+#include "trainData.h"
 #include "trainScheduleWidget.h"
 #include "sessionPainter.h"
 #include "defaultSessionPainter.h"
@@ -10,14 +11,17 @@
 #include <QtGui>
 #include <QSharedPointer>
 #include <QFile>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 #include <QtDebug>
 
 TrainScheduleWindow::TrainScheduleWindow()
 {
     spainter = new DefaultSessionPainter();
-    weekMap = QSharedPointer<WeekMap>(new WeekMap());
-    tsWidget = new TrainScheduleWidget(weekMap, spainter, this);
-    weekMap->addWeekMapListener(tsWidget);
+
+    trainingData = QSharedPointer<TrainingData>(new TrainingData());
+    tsWidget = new TrainScheduleWidget(trainingData, spainter, this);
+    trainingData->getWeekMap()->addWeekMapListener(tsWidget);
 
     createActions();
     createMenus();
@@ -25,7 +29,7 @@ TrainScheduleWindow::TrainScheduleWindow()
     // read in schedule, if available
     ConfigData::instance().readXML();
     if ( ! ConfigData::instance().getScheduleFileName().isEmpty()) {
-        weekMap->readXML(ConfigData::instance().getScheduleFileName());
+        trainingData->open(ConfigData::instance().getScheduleFileName());
         trainDataFile = ConfigData::instance().getScheduleFileName();
     }
 
@@ -109,9 +113,9 @@ void TrainScheduleWindow::createNewWeek() {
         Week selectedWeek(cwDialog.getWeek(), cwDialog.getYear());
         bool success;
         if (cwDialog.doRemove()) {
-            success = weekMap->removeWeek(selectedWeek);
+            success = trainingData->getWeekMap()->removeWeek(selectedWeek);
         } else {
-            success = weekMap->insertNewWeek(selectedWeek);
+            success = trainingData->getWeekMap()->insertNewWeek(selectedWeek);
         }
         setWindowModified(success);
     }
@@ -126,7 +130,7 @@ bool TrainScheduleWindow::save() {
 }
 
 bool TrainScheduleWindow::saveTrainFile(const QString& fileName) {
-    if ( ! weekMap->save(fileName)) {
+    if ( ! trainingData->save(fileName)) {
         qDebug() << "save failed";
         return false;
     }
@@ -147,7 +151,7 @@ void TrainScheduleWindow::open() {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Training Data"), ".", tr("Training files (*.tr)\n"
                                                                                             "All (*.*)"));
     if (!fileName.isEmpty()) {
-        weekMap->readXML(fileName);
+        trainingData->open(fileName);
     }
 }
 
@@ -158,3 +162,43 @@ void TrainScheduleWindow::openConfigDialog() {
         qDebug() << "configuration accepted";
     }
 }
+
+//bool TrainScheduleWindow::readXML(const QString& fileName) {
+//    QFile file(fileName);
+//    if ( ! file.open(QFile::ReadOnly)) {
+//        // TODO: warn
+//        return false;
+//    }
+
+//    QString xmlString;
+
+//    if (ConfigData::instance().doCompressSdlFile()) {
+//        qDebug() << "reading from compressed file";
+//        QDataStream dataIn(&file);
+//        QByteArray compressedByteArray;
+//        dataIn >> compressedByteArray;
+//        QByteArray xmlByteArray = qUncompress(compressedByteArray);
+//        xmlString = QString::fromUtf8(xmlByteArray.data(), xmlByteArray.size());
+//    } else {
+//        qDebug() << "reading UNcompressed file";
+//        QTextStream txtIn(&file);
+//        xmlString = txtIn.readAll();
+//    }
+
+//    file.close();
+
+
+//    QXmlStreamReader xmlReader(xmlString);
+
+//    xmlReader.readNext();
+//    while( ! xmlReader.atEnd()) {
+//        if (xmlReader.isStartElement()) {
+//            if (xmlReader.name() == "weekmap") {
+//                weekMap->readXML(xmlReader);
+//            } else if (xmlReader.name() == "myroutes") {
+
+//            }
+//        }
+//    }
+
+//}

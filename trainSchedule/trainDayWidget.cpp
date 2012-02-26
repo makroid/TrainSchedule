@@ -2,18 +2,23 @@
 #include "daySchedule.h"
 #include "sessionPainter.h"
 #include "sessionsDialog.h"
+#include "week.h"
+#include "weekMap.h"
 
 #include <QPainter>
 #include <QPointF>
 #include <QSize>
 #include <QtDebug>
 
-TrainDayWidget::TrainDayWidget(QSharedPointer<DaySchedule> const daySdl, SessionPainter *const sp, Week w, QWidget *parent)
+
+TrainDayWidget::TrainDayWidget(QSharedPointer<TrainingData> td, SessionPainter *const sp, Week w, int d, QWidget *parent)
     : ScheduleCellWidget(w, parent),
-      daySchedule(daySdl),
-      spainter(sp)
+      trainingData(td),
+      daySchedule(td->getWeekMap()->getDayInWeek(w, d)),
+      spainter(sp),
+      week(w),
+      day(d)
 {
-    qDebug() << daySchedule->toTestString();
     createConnections();    
 }
 
@@ -39,7 +44,7 @@ void TrainDayWidget::paintEvent(QPaintEvent * /*event*/) {
 }
 
 void TrainDayWidget::mouseDoubleClickEvent(QMouseEvent *) {
-    SessionsDialog sdialog(daySchedule.data(), this);
+    SessionsDialog sdialog(trainingData, week, day, this);
     sdialog.exec();
     setWindowModified(sdialog.isModified());
 }

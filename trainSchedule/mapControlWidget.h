@@ -20,7 +20,7 @@ public:
     MapControlWidget(MapWidget * const mapWidget, QWidget *parent=0);
 
     QSize sizeHint() const { return minimumSizeHint(); }
-    void reset();
+    void reset(bool moveToCenter=true);
     void setRecording();
     void forwardModeRadioButton();
 

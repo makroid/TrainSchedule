@@ -15,16 +15,18 @@
 #include "durationSpinBox.h"
 #include "mapWidget.h"
 #include "mapControlWidget.h"
-#include "daySchedule.h"
+
 
 class SessionsWidget;
+class DaySchedule;
+class MapAndControlWidget;
 
 class NewSessionWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    NewSessionWidget(DaySchedule* ds, MapWidget* const mw, MapControlWidget* const mcw, SessionsWidget* parent = 0);
+    NewSessionWidget(DaySchedule* ds, MapAndControlWidget* const macw, SessionsWidget* parent);
     void reset();
     void completeReset();
     void enableControlWidget();

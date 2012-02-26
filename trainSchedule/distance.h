@@ -2,8 +2,9 @@
 #define DISTANCE_H
 
 #include <QString>
-#include <QXmlStreamWriter>
-#include <QXmlStreamReader>
+
+class QXmlStreamWriter;
+class QXmlStreamReader;
 
 class Distance
 {

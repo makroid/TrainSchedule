@@ -5,7 +5,6 @@
 #include <QObject>
 #include <QMap>
 #include <QSharedPointer>
-#include <QXmlStreamWriter>
 
 #include "week.h"
 #include "weekChange.h"
@@ -13,6 +12,8 @@
 #include "weekSummary.h"
 
 class WeekMapListener;
+class QXmlStreamReader;
+class QXmlStreamWriter;
 
 class WeekMap : public QObject
 {
@@ -35,8 +36,7 @@ public:
 
     // readers/writers
     void writeXML(QXmlStreamWriter& writer) const;
-    bool readXML(const QString& fileName);
-    bool save(const QString& fileName);
+    void readXML(QXmlStreamReader& reader);
 
 signals:
     void newWeekInserted(WeekChange);

@@ -17,12 +17,14 @@
 #include "mapControlWidget.h"
 #include "daySchedule.h"
 
+class MapAndControlWidget;
+
 class ExistingSessionsWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    ExistingSessionsWidget(DaySchedule* ds, MapWidget* const mw, MapControlWidget* const mcw, QWidget* parent = 0);
+    ExistingSessionsWidget(DaySchedule* ds, MapAndControlWidget* const mcaw, QWidget* parent = 0);
 
 public slots:
     void updateDistance(double d);

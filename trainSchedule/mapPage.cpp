@@ -58,6 +58,23 @@ QString MapPage::evalExportAsKml(const KmlParameters& kml) const {
     return kmlCode.toString();
 }
 
+void MapPage::evalGeocodeAddress(const QString &address) const {
+    QString cmd = QString("geocodeLocationForAddress('%1');").arg(address);
+    qDebug() << "evalGeocodeAddress=" << cmd;
+    this->mainFrame()->evaluateJavaScript(cmd);
+}
+
+void MapPage::evalJoinWithCurRoute(const MapRoute &amapRoute) const {
+    QString cmd = "var poly=[];";
+    for (int i=0; i<amapRoute.getPolyline().length(); i++) {
+        cmd += "poly.push(" + LatLng(amapRoute.getPolyline().at(i)) + ");";
+    }
+    cmd += QString("var len=%1;").arg(amapRoute.getDistanceInMeter());
+    cmd += "curRoute.joinWithCurRoute(poly,len);";
+    qDebug() << "evalJoinWithCurRoute=" << cmd;
+    this->mainFrame()->evaluateJavaScript(cmd);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // setters
 
@@ -85,13 +102,13 @@ void MapPage::evalSetName(QString aname) const {
     this->mainFrame()->evaluateJavaScript(cmd);
 }
 
-void MapPage::evalSetPolyline(const QList<QPointF> &apoly) const {
+void MapPage::evalSetPolylineAndFitBounds(const QList<QPointF> &apoly) const {
     QString cmd = "var poly=[];";
     for (int i=0; i<apoly.length(); i++) {
         cmd += "poly.push(" + LatLng(apoly[i]) + ");";
     }
-    cmd += "curRoute.setPolylineExt(poly);";
-    qDebug() << "evalSetPolyline()" << cmd;
+    cmd += "curRoute.setPolylineAndFitBounds(poly);";
+    qDebug() << "evalSetPolylineAndFitBounds()" << cmd;
     this->mainFrame()->evaluateJavaScript(cmd);
 }
 
@@ -133,13 +150,13 @@ void MapPage::evalSetDistanceMarkers() const {
     this->mainFrame()->evaluateJavaScript(cmd);
 }
 
-void MapPage::loadMapRoute(const MapRoute& amapRoute) const {
+int MapPage::loadMapRoute(const MapRoute& amapRoute) const {
     qDebug() << "START loadMapRoute";
-    evalStartNewRoute();
+    int id = evalStartNewRoute();
     qDebug() << "evalStartNewRoute";
     evalSetName(amapRoute.getName());
     qDebug() << "getName";
-    evalSetPolyline(amapRoute.getPolyline());
+    evalSetPolylineAndFitBounds(amapRoute.getPolyline());
     qDebug() << "getpolyline";
     evalSetHistorySteps(amapRoute.getHistorySteps());
     qDebug() << "historysteps";
@@ -157,6 +174,23 @@ void MapPage::loadMapRoute(const MapRoute& amapRoute) const {
     evalSetDistanceInMeter(amapRoute.getDistanceInMeter());
     qDebug() << "setDistance";
     qDebug() << "END loadMapRoute";
+    return id;
+}
+
+// if there is already an existing route => extend it by amapRoute
+// otherwise just load amapRoute (extend it to empty route)
+bool MapPage::extendMapRoute(const MapRoute &amapRoute) const {
+    bool isCurRouteNull = evalIsCurRouteNull();
+    bool startNewRoute = false;
+    if (isCurRouteNull) {
+        qDebug() << "extendMapRoute: routeExists==false";
+        loadMapRoute(amapRoute);
+        startNewRoute = true;
+    } else {
+        qDebug() << "extendMapRoute: try to join with curRoute";
+        evalJoinWithCurRoute(amapRoute);
+    }
+    return startNewRoute;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -254,6 +288,8 @@ void MapPage::fillMapRoute(MapRoute &amapRoute) const {
     qDebug() << "setName";
     qDebug() << "END fillMapRoute";
 }
+
+
 
 QString MapPage::LatLng(const QPointF &apoint) const {
     // increase precision for apoint, because default values are too low!

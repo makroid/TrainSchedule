@@ -1,10 +1,11 @@
 #include "existingSessionsWidget.h"
+#include "mapAndControlWidget.h"
 
-ExistingSessionsWidget::ExistingSessionsWidget(DaySchedule* ds, MapWidget* const mw, MapControlWidget* const mcw, QWidget *parent)
+ExistingSessionsWidget::ExistingSessionsWidget(DaySchedule* ds, MapAndControlWidget* const macw, QWidget *parent)
     : QWidget(parent),
       daySdl(ds),
-      mapWidget(mw),
-      mapControlWidget(mcw)
+      mapWidget(macw->getMapWidget()),
+      mapControlWidget(macw->getMapControlWidget())
 {
     createWidgets();
     createLayout();
