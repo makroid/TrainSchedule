@@ -180,6 +180,7 @@ function MapRoute(aid) {
 	this.prevPos = this.getLastPolyPos(); 
 	this.setCurPos(this.getLastPolyPos());
 	curPosMarker.setPosition(this.curPos);
+	map.setCenter(this.curPos);
 	return true;
     };
 
@@ -607,7 +608,6 @@ function handleMapDblClick(dblClkPos) {
 	} else if (curRoute.getModus() == 3) {
 	    // manual mode
 	    curRoute.setCurPos(dblClkPos);
-	    curRoute.prevPos = curRoute.curPos;
 	    curPosMarker.setPosition(dblClkPos);
 
 	    curRoute.addSinglePosToPoly(curRoute.curPos);
@@ -617,6 +617,7 @@ function handleMapDblClick(dblClkPos) {
 	    curRoute.updateDistMarkers(edge, curRoute.getDistance());
 	    curRoute.addToDistance(dist);
 	    curRoute.updateHistory(oldPathLen+1, dist);
+	    curRoute.prevPos = curRoute.curPos;
 	}  
     }
     map.setCenter(dblClkPos);

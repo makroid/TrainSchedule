@@ -5,7 +5,9 @@
 
 #include <QtDebug>
 #include <QHeaderView>
+#include <QScrollBar>
 #include <QStringList>
+#include <QSize>
 
 TrainScheduleWidget::TrainScheduleWidget(QSharedPointer<TrainingData> td, SessionPainter* const sp, QWidget *parent)
     : QTableWidget(parent),
@@ -93,13 +95,21 @@ void TrainScheduleWidget::insertNewWeek(Week aweek) {
 }
 
 void TrainScheduleWidget::resizeEvent(QResizeEvent *) {
+    int vscrollWidth = 0;
+    if (verticalScrollBar()->isVisible()) {
+        vscrollWidth += verticalScrollBar()->width();
+    }
     // adjust column widths
-    int newColWidth = (width()-verticalHeader()->width() -1) / widgetsPerRow;
-    int lastColWidth = width() - (widgetsPerRow-1)*newColWidth - 2;
+    int newColWidth = (viewport()->width() - vscrollWidth - 1) / widgetsPerRow;
+
+    int lastColWidth = viewport()->width() - (widgetsPerRow-1)*newColWidth ;
     for (int i=0; i<widgetsPerRow-1; i++) {
         setColumnWidth(i, newColWidth);
     }
     setColumnWidth(widgetsPerRow-1, lastColWidth);
+
+    // to ensure that vertical scrollbar is updated (added or removed)
+    updateGeometries();
 }
 
 QSize TrainScheduleWidget::sizeHint() const {

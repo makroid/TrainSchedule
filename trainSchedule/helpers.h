@@ -6,6 +6,7 @@
 #include <QString>
 #include <QStringList>
 #include <QPointF>
+#include <QPair>
 #include <QXmlStreamReader>
 
 namespace Helper {
@@ -44,6 +45,24 @@ namespace Helper {
         double c = 2*atan2(sqrt(a), sqrt(1-a));
         double dist = R * c;
         return dist;
+    }
+
+    inline QPair<QPointF, QPointF> computeBound(const QList<QPointF>& path) {
+        QPointF northWest;
+        QPointF southEast;
+        if (path.count() > 0) {
+            northWest = path[0];
+            southEast = path.last();
+        } else {
+            return QPair<QPointF,QPointF>(northWest, southEast);
+        }
+        for (int i=0; i<path.count(); i++) {
+            if (path[i].x() < northWest.x()) northWest.setX(path[i].x());
+            if (path[i].x() > southEast.x()) southEast.setX(path[i].x());
+            if (path[i].y() < northWest.y()) northWest.setY(path[i].y());
+            if (path[i].y() > southEast.y()) southEast.setY(path[i].y());
+        }
+        return QPair<QPointF,QPointF>(northWest, southEast);
     }
 }
 
