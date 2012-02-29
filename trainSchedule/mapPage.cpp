@@ -71,7 +71,7 @@ void MapPage::evalJoinWithCurRoute(const MapRoute &amapRoute) const {
     }
     cmd += QString("var len=%1;").arg(amapRoute.getDistanceInMeter());
     cmd += "curRoute.joinWithCurRoute(poly,len);";
-    qDebug() << "evalJoinWithCurRoute=" << cmd;
+   // qDebug() << "evalJoinWithCurRoute=" << cmd;
     this->mainFrame()->evaluateJavaScript(cmd);
 }
 
@@ -108,7 +108,7 @@ void MapPage::evalSetPolylineAndFitBounds(const QList<QPointF> &apoly) const {
         cmd += "poly.push(" + LatLng(apoly[i]) + ");";
     }
     cmd += "curRoute.setPolylineAndFitBounds(poly);";
-    qDebug() << "evalSetPolylineAndFitBounds()" << cmd;
+    // qDebug() << "evalSetPolylineAndFitBounds()" << cmd;
     this->mainFrame()->evaluateJavaScript(cmd);
 }
 
@@ -118,7 +118,7 @@ void MapPage::evalSetHistorySteps(const QList<int> &asteps) const {
         cmd += QString("poly.push(%1);").arg(asteps[i]);
     }
     cmd += "curRoute.setHistorySteps(poly);";
-    qDebug() << "evalSetHistorySteps()" << cmd;
+    // qDebug() << "evalSetHistorySteps()" << cmd;
     this->mainFrame()->evaluateJavaScript(cmd);
 }
 
@@ -128,7 +128,7 @@ void MapPage::evalSetHistoryDists(const QList<double> &adists) const {
         cmd += QString("dists.push(%1);").arg(adists[i]);
     }
     cmd += "curRoute.setHistoryDists(dists);";
-    qDebug() << "evalSetHistoryDists()" << cmd;
+    // qDebug() << "evalSetHistoryDists()" << cmd;
     this->mainFrame()->evaluateJavaScript(cmd);
 }
 
@@ -183,11 +183,9 @@ bool MapPage::extendMapRoute(const MapRoute &amapRoute) const {
     bool isCurRouteNull = evalIsCurRouteNull();
     bool startNewRoute = false;
     if (isCurRouteNull) {
-        qDebug() << "extendMapRoute: routeExists==false";
         loadMapRoute(amapRoute);
         startNewRoute = true;
     } else {
-        qDebug() << "extendMapRoute: try to join with curRoute";
         evalJoinWithCurRoute(amapRoute);
     }
     return startNewRoute;

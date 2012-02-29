@@ -15,6 +15,27 @@ MapRoute::MapRoute()
 
 MapRoute::~MapRoute() {}
 
+void MapRoute::reverseRoute() {
+    if (polyline.length() <= 1) return;
+    for (int i=0; i<polyline.size(); i++) qDebug() << "polyline[" << i << "]=" << polyline[i].x() << "," << polyline[i].y();
+    Helper::inplaceReverse(polyline);
+    for (int i=0; i<polyline.size(); i++) qDebug() << "polyline[" << i << "]=" << polyline[i].x() << "," << polyline[i].y();
+    Helper::inplaceReverse(distances);
+    // reverse step history
+    QList<int> newHistorySteps;
+    for (int i=historySteps.size()-1; i>=0; i--) {
+        newHistorySteps << (historySteps.last()+1) - historySteps[i];
+    }
+    historySteps = newHistorySteps;
+    // update curPos and prevPos
+    if (curPos != prevPos && polyline.size() >= 2) {
+        prevPos = polyline[polyline.size()-2];
+    } else {
+        prevPos = polyline.last();
+    }
+    curPos = polyline.last();
+}
+
 QPointF MapRoute::getCurPos() const {
     return curPos;
 }

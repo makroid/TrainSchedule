@@ -16,6 +16,8 @@ public:
 
     typedef enum {runnerAutomatic=1, bikerAutomatic=2, manual=3} clickmodus;
 
+    void reverseRoute();
+
     // getters
     QPointF getCurPos() const;
     QPointF getPrevPos() const;

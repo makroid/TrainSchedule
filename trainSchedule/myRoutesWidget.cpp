@@ -3,6 +3,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QLineEdit>
+#include <QCheckBox>
 #include <QGridLayout>
 
 #include "myRoutesTable.h"
@@ -59,8 +60,14 @@ void MyRoutesWidget::addRouteToMyRoutes() {
 
         route.setName(routeName);
         myRoutesTable->addEntry(route);
-        mapControlWidget->reset(false);
 
+        if (dialog.reverseCheckBox->isChecked()) {
+            QString reverseRouteName = dialog.reverseNameLineEdit->text();
+            route.reverseRoute();
+            route.setName(reverseRouteName);
+            myRoutesTable->addEntry(route);
+        }
+        mapControlWidget->reset(false);
         setWindowModified(true);
     }
 }

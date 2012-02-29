@@ -7,6 +7,7 @@ class QWidget;
 class QLabel;
 class QLineEdit;
 class QPushButton;
+class QCheckBox;
 
 class MyRoutesAddDialog : public QDialog
 {
@@ -16,6 +17,8 @@ public:
     MyRoutesAddDialog(QWidget* parent = 0);
 
     QLineEdit* nameLineEdit;
+    QLineEdit* reverseNameLineEdit;
+    QCheckBox* reverseCheckBox;
 
 private slots:
     void checkAndAccept();

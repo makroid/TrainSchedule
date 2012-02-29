@@ -64,6 +64,11 @@ namespace Helper {
         }
         return QPair<QPointF,QPointF>(northWest, southEast);
     }
+
+    template<typename T>
+    inline void inplaceReverse(QList<T>& alist) {
+        for(int k = 0; k < (alist.size()/2); k++) alist.swap(k, alist.size()-(k+1));
+    }
 }
 
 #endif // HELPERS_H
