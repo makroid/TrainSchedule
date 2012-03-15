@@ -123,7 +123,6 @@ void ExistingSessionsWidget::loadSession(int i) {
     // is there a route in the map available?
     int routeId = daySdl->getSession(i)->getMapRoute().getMapId();
     if (routeId != -1) {
-        qDebug() << "route available";
         mapWidget->loadMapRoute(daySdl->getSession(i)->getMapRoute());
         mapControlWidget->setRecording();
         mapControlWidget->setCurrentRouteId(routeId);
@@ -188,7 +187,6 @@ void ExistingSessionsWidget::saveSession() {
 
     int comboIdx = typeCombo->currentIndex();
     if (comboIdx != -1) {
-        qDebug() << "saveSession comboIdx=" << comboIdx;
         daySdl->getSession(idx)->setType(comboIdx);
     }
     daySdl->getSession(idx)->setDistance(dist);

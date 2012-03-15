@@ -8,7 +8,6 @@ void WeekSummary::update() {
     // clear sessions list
     weekSessions.clear();
     typeToIdx.clear();
-
     // and build new one
     for (int i=0; i<days->count(); i++) {
         for (int j=0; j<days->value(i)->getNumSessions(); j++) {
@@ -33,7 +32,7 @@ QSharedPointer<Session>& WeekSummary::sessionForType(int type) {
         Distance dist;
         QSharedPointer<Session> se = QSharedPointer<Session>(new Session(type, dur, dist));
         weekSessions.push_back(se);
-        typeToIdx[type] = type;
+        typeToIdx[type] = weekSessions.size()-1;
         return weekSessions.last();
     }
 }

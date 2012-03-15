@@ -431,6 +431,23 @@ function MapRoute(aid) {
 	}
 	map.setCenter(aRoutePoly[aRoutePoly.length-1]);
     };
+
+    this.getElevation = function() {
+	// split up route having an elevation value all ~25m intervals
+	
+
+	var pathRequest = {
+	    'path': this.poly.getPath(),
+	    'samples': samples
+	}
+
+	var elevator = new google.maps.ElevationService();
+	elevator.getElevationAlongPath(pathRequest, function(results, status) {
+	    if (status == google.maps.ElevationStatus.OK) {
+		
+	    }
+	});
+    };
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
