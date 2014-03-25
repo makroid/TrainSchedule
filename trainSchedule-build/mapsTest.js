@@ -294,7 +294,8 @@ function MapRoute(aid) {
       		    // find coordinates of marker
 		    var offset = google.maps.geometry.spherical.computeOffset(from, offdist + j*unit, heading);
 		    var label = startLabel + j;
-		    var image = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=' + label + '|FF0000|0000FF';
+		    var prefix = "AAA ";
+		    var image = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=' + prefix + '' + label + '|FF0000|0000FF';
 		    var marker = new google.maps.Marker({
 			position: offset,
 			map: map,
@@ -433,20 +434,82 @@ function MapRoute(aid) {
     };
 
     this.getElevation = function() {
-	// split up route having an elevation value all ~25m intervals
-	
+	// 
+	var resolution = 25;
+	var samplesPerRequest = 256;
+	var routeSegments = [];
+	var numFinishedRouteSegments = 0;
+	var segLens = [];
+	var sampleIdx = new Array();
+	samplesIdx.push(0);
 
-	var pathRequest = {
-	    'path': this.poly.getPath(),
-	    'samples': samples
+	var path = this.poly.getPath();
+	if (path.length == 0) { return; }
+	var segment = new Array();
+	segment.push(path.getAt(0));
+	var startLocation = path.getAt(0);
+	var results = new Array(); // array containing for each elevation value: distance from previous location (0 for first point), elevation
+	
+	// split route into segments each ~256*X m, so that there is an elevation point all X meters
+	var segLen = 0;
+	for (var i=1; i<path.length; i++) {
+	    segLen += distanceBetween(path.getAt(i-1), path.getAt(i));
+	    push(segment, path.getAt(i));
+	    if (segLen > resolution*samplesPerRequest) {
+		routeSegments.push(segment);
+		segLens.push(seqLen);
+		segment = new Array();
+		segLen = 0;
+	    }
+	}
+	// handle very last segment
+	if (segLen > 0) {
+	    routeSegments.push(segment);
+	    segLens.push(segLen);
 	}
 
-	var elevator = new google.maps.ElevationService();
-	elevator.getElevationAlongPath(pathRequest, function(results, status) {
-	    if (status == google.maps.ElevationStatus.OK) {
+	// calculate sample indices
+	for (var i=0; i<segLens.length; i++) {
+	    var numSamples = Math.ceil(segLens[i] / resolution);
+	    var lastIdx = sampleIdx[sampleIdx.length-1];
+	    sampleIdx.push(lastIdx + numSamples);
+	}
+	// initialize result array - to be filled later
+	for (var i=0; i<2*sampleIdx[sampleIdx.length-1]; i++) {
+	    result.push(0);
+	}
+
+	// for each segment, calculate its elevation
+	for (var i=0; i<routeSegments.length; i++) {	  
+	    (function(seg) {
+		var numSamples = sampleIdx[seg+1] - sampleIdx[seg];
+		var pathRequest = {
+		    'path': routeSegments[seg],
+		    'samples': numSamples
+		}
 		
-	    }
-	});
+		var elevator = new google.maps.ElevationService();
+		elevator.getElevationAlongPath(pathRequest, function(results, status) {
+		    if (status == google.maps.ElevationStatus.OK) {
+			// save elevation values
+			var startIdx = 2*sampleIdx[seg];
+			for (var j=0; j < results.length; j++) {
+			    var elev = results[j].elevation;
+			    var dist = segLens[seg] + j*resolution;
+			    result[startIdx + 2*j] = dist;
+			    result[startIdx + 2*j + 1] = elev;
+			}
+			// is this safe?
+			numFinishedRouteSegments++;
+			// check if all other elevation request have already been finished
+			if (numFinishedRouteSegments == routeSegments.length) {
+			    // this is a QT object which was made available via QT's addToJavaScriptWindowObject function
+			    QTElevationPlotter.setValues(result);
+			}
+		    }
+		});
+	    })(i);
+	}
     };
 };
 

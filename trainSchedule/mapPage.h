@@ -50,6 +50,7 @@ public slots:
     void evalJoinWithCurRoute(const MapRoute&) const;
     QString evalExportAsKml(const KmlParameters&) const;
     void evalGeocodeAddress(const QString& address) const;
+    void evalCreateAndAddRouteMarker(int posX, int posY, const QString& markerText) const;
 
     // setters (these are const, because they dont
     // change this object)
@@ -66,7 +67,7 @@ public slots:
 
 protected:
     // this is needed to enable googlemaps for webkit
-    QString userAgentForUrl ( const QUrl & url ) const;
+   // QString userAgentForUrl ( const QUrl & url ) const;
 
 private:
     void variantToPointF(const QVariant&, QPointF&) const;

@@ -8,9 +8,9 @@
 MapPage::MapPage(QWidget *parent) : QWebPage(parent) {
 }
 
-QString MapPage::userAgentForUrl(const QUrl&) const {
-    return "Chrome/1.0";
-}
+//QString MapPage::userAgentForUrl(const QUrl&) const {
+//    return "Chrome/1.0";
+//}
 
 bool MapPage::evalIsCurRouteNull() const {
     QVariant result = this->mainFrame()->evaluateJavaScript("isCurRouteNull();");
@@ -61,6 +61,12 @@ QString MapPage::evalExportAsKml(const KmlParameters& kml) const {
 void MapPage::evalGeocodeAddress(const QString &address) const {
     QString cmd = QString("geocodeLocationForAddress('%1');").arg(address);
     qDebug() << "evalGeocodeAddress=" << cmd;
+    this->mainFrame()->evaluateJavaScript(cmd);
+}
+
+void MapPage::evalCreateAndAddRouteMarker(int posX, int posY, const QString& markerText) const {
+    QString cmd = QString("curRoute.createAndAddRouteMarker(%1,%2,'%3');").arg(posX).arg(posY).arg(markerText);
+    qDebug() << cmd;
     this->mainFrame()->evaluateJavaScript(cmd);
 }
 

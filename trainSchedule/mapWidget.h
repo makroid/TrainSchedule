@@ -3,10 +3,12 @@
 
 #include <QWebView>
 #include <QSize>
+#include <QPoint>
 
 #include "mapPage.h"
 
 class MapRoute;
+class QAction;
 
 class MapWidget : public QWebView
 {
@@ -23,8 +25,19 @@ public:
     bool extendMapRoute(const MapRoute&) const;
     bool isCurRouteNull() const { return mapPage->evalIsCurRouteNull(); }
 
+protected:
+   void mousePressEvent(QMouseEvent *);
+
 private:
+   QPoint clickPos;
     MapPage* mapPage;
+    QAction* addMarkerAction;
+
+    void createActions();
+
+private slots:
+    void addMarker();
+    void showContextMenu(const QPoint& pos);
 };
 
 #endif // MAPWIDGET_H

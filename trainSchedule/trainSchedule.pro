@@ -110,4 +110,5 @@ HEADERS += \
     mapOptionWidget.h \
     mapAndOptionWidget.h
 
-RESOURCES +=
+RESOURCES += \
+    res.qrc

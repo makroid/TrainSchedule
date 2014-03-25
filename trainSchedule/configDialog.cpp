@@ -125,7 +125,7 @@ void ConfigDialog::openMap() {
         mapWidget = new MapWidget(this);
         // this connection must be set up here, when mapWidget is initialized
         connect(mapWidget, SIGNAL(loadFinished(bool)), this, SLOT(initializeMap()));
-        mapWidget->load(QUrl("mapsTest.html"));
+        mapWidget->load(QUrl("../data/mapFiles/mapsTest.html"));
         mapWidget->hide();
         layout->insertWidget(-1, mapWidget);
         isMapLoaded = true;

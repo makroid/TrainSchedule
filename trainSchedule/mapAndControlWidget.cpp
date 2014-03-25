@@ -18,7 +18,7 @@ MapAndControlWidget::MapAndControlWidget(QWidget* parent) :
 
 void MapAndControlWidget::createWidgets() {
     mapWidget = new MapWidget(this);
-    mapWidget->load(QUrl("mapsTest.html"));
+    mapWidget->load(QUrl("../data/mapFiles/mapsTest.html"));
     mapOptionWidget = new MapOptionWidget(mapWidget);
     mapAndOptionWidget = new MapAndOptionWidget(mapWidget, mapOptionWidget, this);
 

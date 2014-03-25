@@ -36,8 +36,8 @@ TrainScheduleWindow::TrainScheduleWindow()
     setCentralWidget(tsWidget);
 
     // check for map files
-    QFile mapFile("mapsTest.html");
-    QFile mapJsFile("mapsTest.js");
+    QFile mapFile("../data/mapFiles/mapsTest.html");
+    QFile mapJsFile("../data/mapFiles/mapsTest.js");
     if ( ! (mapFile.open(QFile::ReadOnly) && mapJsFile.open(QFile::ReadOnly))) {
         QMessageBox::critical(this, tr("Train Schedule"), tr("Map files not found!\n"
                                                              "(in application directory)"));
