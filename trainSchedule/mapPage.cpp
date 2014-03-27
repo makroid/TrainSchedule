@@ -156,6 +156,13 @@ void MapPage::evalSetDistanceMarkers() const {
     this->mainFrame()->evaluateJavaScript(cmd);
 }
 
+void MapPage::evalSetRouteMarkers(const QList<RouteMarker>& amarkers) const {
+    for (int i=0; i<amarkers.length(); i++) {
+        QString cmd = QString("curRoute.createAndAddRouteMarker(%1,%2,%3,'%4'');").arg(i+1).arg(amarkers[i].getLatLng().x()).arg(amarkers[i].getLatLng().y()).arg(amarkers[i].getMarkerText());
+        this->mainFrame()->evaluateJavaScript(cmd);
+    }
+}
+
 int MapPage::loadMapRoute(const MapRoute& amapRoute) const {
     qDebug() << "START loadMapRoute";
     int id = evalStartNewRoute();
@@ -178,7 +185,7 @@ int MapPage::loadMapRoute(const MapRoute& amapRoute) const {
     qDebug() << "modus";
     evalSetDistanceMarkers();
     evalSetDistanceInMeter(amapRoute.getDistanceInMeter());
-    qDebug() << "setDistance";
+    evalSetRouteMarkers(amapRoute.getRouteMarkers());
     qDebug() << "END loadMapRoute";
     return id;
 }
@@ -242,6 +249,15 @@ QList<QPointF> MapPage::evalGetPolyline() const {
     return polyline;
 }
 
+QList<RouteMarker> MapPage::evalGetRouteMarkers() const {
+    QVariant result = this->mainFrame()->evaluateJavaScript("curRoute.getRouteMarkers();");
+
+    QList<RouteMarker> myRouteMarkers;
+    variantToRouteMarkerList(result, myRouteMarkers);
+
+    return myRouteMarkers;
+}
+
 QList<int> MapPage::evalGetHistorySteps() const {
     QVariant result = this->mainFrame()->evaluateJavaScript("curRoute.getHistorySteps();");
     QVariantList vpath = result.toList();
@@ -267,11 +283,9 @@ QList<double> MapPage::evalGetHistoryDists() const {
 void MapPage::fillMapRoute(MapRoute &amapRoute) const {
     bool noRoute = evalIsCurRouteNull();
     if (noRoute) {
-        qDebug() << "curRoute is null";
         return;
     }
 
-    qDebug() << "START fillMapRoute";
     amapRoute.setMapId(evalGetId());
     qDebug() << "setMapId";
     amapRoute.setCurPos(evalGetCurPos());
@@ -282,6 +296,7 @@ void MapPage::fillMapRoute(MapRoute &amapRoute) const {
     qDebug() << "setModus";
     amapRoute.setPolyline(evalGetPolyline());
     qDebug() << "setPolyline";
+    amapRoute.setRouteMarkers(evalGetRouteMarkers());
     amapRoute.setDistanceInMeter(evalGetDistanceInMeter());
     qDebug() << "setDistance";
     amapRoute.setHistorySteps(evalGetHistorySteps());
@@ -289,8 +304,7 @@ void MapPage::fillMapRoute(MapRoute &amapRoute) const {
     amapRoute.setHistoryDists(evalGetHistoryDists());
     qDebug() << "setHistoryDists";
     amapRoute.setName(evalGetName());
-    qDebug() << "setName";
-    qDebug() << "END fillMapRoute";
+    qDebug() << "setName";   
 }
 
 
@@ -314,5 +328,22 @@ void MapPage::variantToPointFList(const QVariant &aval, QList<QPointF> &pl) cons
     QVariantList vlist = aval.toList();
     for (int i=0; i<vlist.size(); i+=2) {
         pl.push_back(QPointF(vlist[i].toDouble(), vlist[i+1].toDouble()));
+    }
+}
+
+void MapPage::variantToRouteMarkerList(const QVariant &aval, QList<RouteMarker>& sl) const {
+    /* a RouteMarker consists of:
+     * 1) rank
+     * 2) lat lng
+     * 3) markertext
+     **/
+    QVariantList slist = aval.toList();
+    for (int i=0; i<slist.size(); i++) {
+        QStringList splits = slist[i].toString().split("$$$");
+        if (splits.size() < 4) continue;
+        QString markerText = "";
+        // join marker text
+        for (int j=3; j<splits.size(); j++) { markerText += splits[j]; }
+        sl.push_back(RouteMarker(splits[0].toInt(), splits[1].toDouble(), splits[2].toDouble(), markerText));
     }
 }

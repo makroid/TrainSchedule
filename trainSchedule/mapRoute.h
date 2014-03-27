@@ -5,6 +5,8 @@
 #include <QPointF>
 #include <QList>
 
+#include "routemarker.h"
+
 class QXmlStreamWriter;
 class QXmlStreamReader;
 
@@ -28,6 +30,7 @@ public:
     const QList<int>& getHistorySteps() const;
     const QList<double>& getHistoryDists() const;
     const QList<QPointF>& getPolyline() const;
+    const QList<RouteMarker>& getRouteMarkers() const;
     QPointF getStartPos() const;
 
     // setters
@@ -40,6 +43,7 @@ public:
     void setHistorySteps(const QList<int>& historySteps);
     void setHistoryDists(const QList<double>& distances);
     void setPolyline(const QList<QPointF>& polyline);
+    void setRouteMarkers(const QList<RouteMarker>& markers);
 
     QString toString() const;
     void readXML(QXmlStreamReader&);
@@ -49,6 +53,7 @@ private:
     void readHistoryStepsXML(QXmlStreamReader&);
     void readDistancesXML(QXmlStreamReader&);
     void readPolylineXML(QXmlStreamReader&);
+    void readRouteMarkersXML(QXmlStreamReader&);
 
     QPointF curPos;
     QPointF prevPos;
@@ -59,6 +64,7 @@ private:
     QList<int> historySteps;
     QList<double> distances;
     QList<QPointF> polyline;
+    QList<RouteMarker> routeMarkers;
 };
 
 #endif // RUNROUTE_H

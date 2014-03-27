@@ -6,8 +6,6 @@ var routes = [];
 var curRoute = null;
 var curPosMarker = null;
 
-///////////////////////////////////////////////////////////////////
-// tests
 var startLocation = new google.maps.LatLng(48.15494, 12.56468);
 
 function setCenter(lat, lng) {
@@ -23,10 +21,8 @@ function RouteMarkers() {
 	
 	this.addRouteMarker = function(marker) {
 		var myRank = marker.rank;
-		alert(myRank);
 		if (myRank === undefined || myRank > markers.length + 1) {
 			marker.rank = markers.length + 1;
-			alert(marker.rank);	
 		} else if (myRank < 1) {
 			marker.rank = 1;
 		} else {
@@ -34,7 +30,6 @@ function RouteMarkers() {
 		}
 		markers.splice(marker.rank-1, 0, marker); 
 		updateRanks();
-		alert("end");
 	};
 	
 	this.removeRouteMarker = function(marker) {
@@ -53,12 +48,34 @@ function RouteMarkers() {
 		markers.length = 0;
 	};
 	
+	this.rerank = function(oldRank, newRank) {		
+		if (newRank > markers.length || newRank < 1) {
+			newRank = markers.length;
+		}
+		if (newRank < oldRank) {
+			markers.splice(newRank-1, 0, markers[oldRank-1]);
+			markers.splice(oldRank, 1);
+		} else {
+			markers.splice(newRank, 0, markers[oldRank-1]);
+			markers.splice(oldRank-1, 1);
+		}
+		updateRanks();
+	};
+	
+	this.getRouteMarkers = function() {
+		var routeMarkersAsText = [];
+		for (var i=0; i<markers.length; i++) {
+			routeMarkersAsText.push((i+1) + "$$";
+		}
+	};
+	
 	function updateRanks() {	
 		for (var i=1; i<=markers.length; i++) {
 			markers[i-1].rank = i;
+			markers[i-1].inforank.innerHTML = i;
 		}		
 	}
-};
+};  	
 
 ///////////////////////////////////////////////////////////////////
 
@@ -188,28 +205,62 @@ function MapRoute(aid) {
     this.addDistMarker = function(amarker) {
 		distMarkers.push(amarker);
     };
-
-    this.createAndAddRouteMarker = function(widgetPosX, widgetPosY, markerText) {
-    	var clickPos = new google.maps.Point(widgetPosX, widgetPosY);
-    	var clickLatLng = mapOverlay.getProjection().fromContainerPixelToLatLng(clickPos);
+    
+	                                                             // def: true
+    this.createAndAddRouteMarker = function(posX, posY, markerText, isPosOnWidget) {
+    	isPosOnWidget = typeof isPosOnWidget !== 'undefined' ? isPosOnWidget : true;
     	
-    	var infowindow = new google.maps.InfoWindow({
-    	    content: "<div contentEditable='true'>" + markerText + "</div>";
-    	});
+    	var posLatLng = new google.maps.Point(posX, posY);
+    	
+    	if (isPosOnWidget) {
+	    	var clickPos = new google.maps.Point(posX, posY);
+    		posLatLng = mapOverlay.getProjection().fromContainerPixelToLatLng(clickPos);        	
+    	}
 
     	var marker = new google.maps.Marker({
-    	    position: clickLatLng,
+    	    position: posLatLng,
     	    map: map,
     	    title: 'marker'
     	});
     	
     	var iconFile = '../images/blue-dot.png'; 
-		marker.setIcon(iconFile) 
+		marker.setIcon(iconFile);			
+		
+		// create div node that contains two childs: 
+		// one for the maker rank and one for the marker text
+		var infoparent  = document.createElement("div");
+	    var inforank    = document.createElement("div");
+	    var infocontent = document.createElement("div");
+	    
+      	infocontent.setAttribute("contentEditable", "true");
+      	infocontent.setAttribute("style", "width: 80px; height: 25px; overflow: auto");
+      	inforank.setAttribute("style", "float: left; background: #eee; font-weight: bold; padding: 5px; margin-right: 5px");
+      	inforank.setAttribute("contentEditable", "true");
+      	
+      	// needed for updating marker rank in rerank
+       	marker.inforank = inforank;
+       	
+		routeMarkers.addRouteMarker(marker);       	
+
+      	inforank.onkeyup = function(event) { 
+      		var content = inforank.innerHTML; 
+      		if (content === parseInt(content)) {
+	      		routeMarkers.rerank(marker.rank, content); 
+	      	}
+      	};
+      	
+      	inforank.innerHTML = marker.rank;
+      	infocontent.innerHTML = markerText;
+      	
+      	infoparent.appendChild(inforank);
+      	infoparent.appendChild(infocontent);
+    	
+    	var infowindow = new google.maps.InfoWindow({
+    	    content: infoparent
+    	});
     	
     	infowindow.open(map, marker);
-    	
-    	routeMarkers.addRouteMarker(marker);
-    	
+    	   	
     	google.maps.event.addListener(marker, 'click', function() {
     	    infowindow.open(map,marker);
     	});

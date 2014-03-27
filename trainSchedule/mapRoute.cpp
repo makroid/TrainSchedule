@@ -111,6 +111,10 @@ void MapRoute::setPolyline(const QList<QPointF> &apolyline) {
     polyline = apolyline;
 }
 
+void MapRoute::setRouteMarkers(const QList<RouteMarker> &markers) {
+    routeMarkers = markers;
+}
+
 void MapRoute::setHistoryDists(const QList<double>& adistances) {
     distances = adistances;
 }
@@ -163,6 +167,15 @@ void MapRoute::writeXml(QXmlStreamWriter &writer) const {
         writer.writeTextElement("ll", Helper::pointToQString(polyline[i]));
     }
     writer.writeEndElement();
+    writer.writeStartElement("routemarkers");
+    for (int i=0; i<routeMarkers.length(); ++i) {
+        writer.writeStartElement("marker");
+        writer.writeTextElement("rank", QString::number(routeMarkers[i].getRank()));
+        writer.writeTextElement("latlng", Helper::pointToQString(routeMarkers[i].getLatLng()));
+        writer.writeTextElement("text", routeMarkers[i].getMarkerText());
+        writer.writeEndElement();
+    }
+    writer.writeEndElement();
     writer.writeEndElement();
 }
 
@@ -207,6 +220,9 @@ void MapRoute::readXML(QXmlStreamReader &xmlReader) {
                 xmlReader.readNext();
             } else if (xmlReader.name() == "polyline") {
                 readPolylineXML(xmlReader);
+                xmlReader.readNext();
+            } else if (xmlReader.name() == "routemarkers") {
+                readRouteMarkersXML(xmlReader);
                 xmlReader.readNext();
             } else {
                 Helper::skipUnknownElements(xmlReader);
@@ -264,6 +280,26 @@ void MapRoute::readPolylineXML(QXmlStreamReader& xmlReader) {
         if (xmlReader.isStartElement()) {
             if (xmlReader.name() == "ll") {
                 polyline.push_back(Helper::stringToPoint(xmlReader.readElementText()));
+                xmlReader.readNext();
+            } else {
+                Helper::skipUnknownElements(xmlReader);
+            }
+        } else {
+            xmlReader.readNext();
+        }
+    }
+}
+
+void MapRoute::readRouteMarkersXML(QXmlStreamReader& xmlReader) {
+    xmlReader.readNext();
+    while(!xmlReader.atEnd()) {
+        if (xmlReader.isEndElement()) {
+            break;
+        }
+        if (xmlReader.isStartElement()) {
+            if (xmlReader.name() == "marker") {
+                RouteMarker rm(xmlReader);
+                routeMarkers.push_back(rm);
                 xmlReader.readNext();
             } else {
                 Helper::skipUnknownElements(xmlReader);

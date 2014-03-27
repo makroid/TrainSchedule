@@ -13,6 +13,7 @@
 class KmlParameters;
 
 #include "mapRoute.h"
+#include "routemarker.h"
 
 class MapPage : public QWebPage
 {
@@ -64,6 +65,7 @@ public slots:
     void evalSetPrevPos(QPointF prevPos) const;
     void evalSetModus(MapRoute::clickmodus) const;
     void evalSetDistanceMarkers() const;
+    void evalSetRouteMarkers(const QList<RouteMarker>& amarkers) const;
 
 protected:
     // this is needed to enable googlemaps for webkit
@@ -72,6 +74,7 @@ protected:
 private:
     void variantToPointF(const QVariant&, QPointF&) const;
     void variantToPointFList(const QVariant&, QList<QPointF>&) const;
+    void variantToRouteMarkerList(const QVariant &, QList<RouteMarker>&) const;
 
 };
 
