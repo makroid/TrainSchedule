@@ -257,7 +257,7 @@ QList<QPointF> MapPage::evalGetPolyline() const {
 }
 
 QList<RouteMarker> MapPage::evalGetRouteMarkers() const {
-    QVariant result = this->mainFrame()->evaluateJavaScript("curRoute.getRouteMarkers();");
+    QVariant result = this->mainFrame()->evaluateJavaScript("curRoute.getRouteMarkersAsTxt();");
 
     QList<RouteMarker> myRouteMarkers;
     variantToRouteMarkerList(result, myRouteMarkers);

@@ -1,6 +1,7 @@
 #include "mapControlWidget.h"
 #include "mapWidget.h"
 #include "kmlExportDialog.h"
+#include "routeMarkerExportDialog.h"
 #include "mapPage.h"
 
 #include <QList>
@@ -153,11 +154,11 @@ void MapControlWidget::forwardModeRadioButton() {
 }
 
 void MapControlWidget::showRouteMarkerExportDialog() {
+    RouteMarkerExportDialog markerDialog(mapWidget, this);
+    markerDialog.exec();
 }
 
 void MapControlWidget::showExportRouteAsKmlDialog() {
     KmlExportDialog kmlDialog(mapWidget, this);
-    if (kmlDialog.exec()) {
-
-    }
+    kmlDialog.exec();
 }

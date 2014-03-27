@@ -52,7 +52,6 @@ function RouteMarkers() {
 		if (newRank > markers.length || newRank < 1) {
 			newRank = markers.length;
 		}
-		alert("newRank=" + newRank + ",length=" + markers.length);
 		if (newRank < oldRank) {
 			markers.splice(newRank-1, 0, markers[oldRank-1]);
 			markers.splice(oldRank, 1);
@@ -63,7 +62,7 @@ function RouteMarkers() {
 		updateRanks();
 	};
 	
-	this.getRouteMarkers = function() {
+	this.getRouteMarkersAsTxt = function() {
 		var routeMarkersAsText = [];
 		for (var i=0; i<markers.length; i++) {
 			var mt = (i+1) + "$$$";
@@ -251,8 +250,9 @@ function MapRoute(aid) {
 	    var infocontent = document.createElement("div");
 	    
       	infocontent.setAttribute("contentEditable", "true");
-      	infocontent.setAttribute("style", "width: 80px; height: 25px; overflow: auto");
-      	inforank.setAttribute("style", "float: left; background: #eee; font-weight: bold; padding: 5px; margin-right: 5px");
+      	//infocontent.setAttribute("style", "width: 80px; height: 25px");
+      	infocontent.setAttribute("style", "width: 80px");
+      	inforank.setAttribute("style", "float: left; background: #eee; font-weight: bold; padding: 2px; margin-right: 3px; margin-left: 3px");
       	inforank.setAttribute("contentEditable", "true");
       	
       	// needed for updating marker rank in rerank
@@ -263,7 +263,6 @@ function MapRoute(aid) {
 
       	inforank.onkeyup = function(event) { 
       		var content = inforank.innerText; 
-			//alert("content=>" + content + "<");
       		if ( ! isNaN(parseInt(content))) {
       			var newRank = parseInt(content);
 	      		routeMarkers.rerank(marker.rank, newRank); 
@@ -301,8 +300,8 @@ function MapRoute(aid) {
     	routeMarkers.removeAllRouteMarkers();
     };
     
-    this.getRouteMarkers = function() {
-    	return routeMarkers.getRouteMarkers();
+    this.getRouteMarkersAsTxt = function() {
+    	return routeMarkers.getRouteMarkersAsTxt();
     };
     
     this.showAllRouteMarkers = function(isShow) {
