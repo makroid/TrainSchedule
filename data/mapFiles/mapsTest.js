@@ -52,6 +52,7 @@ function RouteMarkers() {
 		if (newRank > markers.length || newRank < 1) {
 			newRank = markers.length;
 		}
+		alert("newRank=" + newRank + ",length=" + markers.length);
 		if (newRank < oldRank) {
 			markers.splice(newRank-1, 0, markers[oldRank-1]);
 			markers.splice(oldRank, 1);
@@ -65,7 +66,23 @@ function RouteMarkers() {
 	this.getRouteMarkers = function() {
 		var routeMarkersAsText = [];
 		for (var i=0; i<markers.length; i++) {
-			routeMarkersAsText.push((i+1) + "$$";
+			var mt = (i+1) + "$$$";
+			mt += markers[i].getPosition().lat() + "$$$";
+			mt += markers[i].getPosition().lng() + "$$$";
+			mt += markers[i].infocontent.innerHTML;
+			routeMarkersAsText.push(mt);
+		}
+		return routeMarkersAsText;
+	};
+	
+	this.showAllRouteMarkers = function(isShow) {
+		for (var i=0; i<markers.length; i++) {
+			markers[i].setVisible(isShow);
+			if ( ! isShow) {
+				markers[i].infowindow.close();
+			} else {
+				markers[i].infowindow.open(map, markers[i]);
+			}
 		}
 	};
 	
@@ -206,11 +223,9 @@ function MapRoute(aid) {
 		distMarkers.push(amarker);
     };
     
-	                                                             // def: true
-    this.createAndAddRouteMarker = function(posX, posY, markerText, isPosOnWidget) {
-    	isPosOnWidget = typeof isPosOnWidget !== 'undefined' ? isPosOnWidget : true;
-    	
-    	var posLatLng = new google.maps.Point(posX, posY);
+	                                                             
+    this.createAndAddRouteMarker = function(posX, posY, markerText, isPosOnWidget) {   	
+    	var posLatLng = new google.maps.LatLng(posX, posY);	
     	
     	if (isPosOnWidget) {
 	    	var clickPos = new google.maps.Point(posX, posY);
@@ -224,6 +239,9 @@ function MapRoute(aid) {
     	});
     	
     	var iconFile = '../images/blue-dot.png'; 
+    	if (markerText.indexOf("shit:") == 0) {
+    		iconFile = '../images/shit.png';
+    	}
 		marker.setIcon(iconFile);			
 		
 		// create div node that contains two childs: 
@@ -239,13 +257,16 @@ function MapRoute(aid) {
       	
       	// needed for updating marker rank in rerank
        	marker.inforank = inforank;
+       	marker.infocontent = infocontent;
        	
 		routeMarkers.addRouteMarker(marker);       	
 
       	inforank.onkeyup = function(event) { 
-      		var content = inforank.innerHTML; 
-      		if (content === parseInt(content)) {
-	      		routeMarkers.rerank(marker.rank, content); 
+      		var content = inforank.innerText; 
+			//alert("content=>" + content + "<");
+      		if ( ! isNaN(parseInt(content))) {
+      			var newRank = parseInt(content);
+	      		routeMarkers.rerank(marker.rank, newRank); 
 	      	}
       	};
       	
@@ -260,6 +281,7 @@ function MapRoute(aid) {
     	});
     	
     	infowindow.open(map, marker);
+    	marker.infowindow = infowindow;
     	   	
     	google.maps.event.addListener(marker, 'click', function() {
     	    infowindow.open(map,marker);
@@ -277,6 +299,14 @@ function MapRoute(aid) {
     
     this.removeAllRouteMarkers = function() {
     	routeMarkers.removeAllRouteMarkers();
+    };
+    
+    this.getRouteMarkers = function() {
+    	return routeMarkers.getRouteMarkers();
+    };
+    
+    this.showAllRouteMarkers = function(isShow) {
+		routeMarkers.showAllRouteMarkers(isShow);
     }
     
     this.undoStep = function() {
@@ -750,7 +780,7 @@ function startNewSingleRoute(aid) {
     
     curPosMarker = new google.maps.Marker({
 		map: map,
-		title:"start"
+		title:"end"
     });
     return id;
 }
@@ -777,8 +807,7 @@ function deleteCurRoute() {
     if (curRoute === null) { return false; }
     curRoute.setDistance(0);
     curRoute.removeAllDistMarkers();
-    curRoute.removeRouteDistMarkers();
-    curRoute.
+    curRoute.removeAllRouteMarkers();
     curRoute.poly.setMap(null);
     curRoute = null;
     curPosMarker.setMap(null);

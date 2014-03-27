@@ -65,7 +65,7 @@ void MapPage::evalGeocodeAddress(const QString &address) const {
 }
 
 void MapPage::evalCreateAndAddRouteMarker(int posX, int posY, const QString& markerText) const {
-    QString cmd = QString("curRoute.createAndAddRouteMarker(%1,%2,'%3');").arg(posX).arg(posY).arg(markerText);
+    QString cmd = QString("curRoute.createAndAddRouteMarker(%1,%2,'%3',true);").arg(posX).arg(posY).arg(markerText);
     qDebug() << cmd;
     this->mainFrame()->evaluateJavaScript(cmd);
 }
@@ -151,16 +151,22 @@ void MapPage::evalSetModus(MapRoute::clickmodus amodus) const {
 }
 
 void MapPage::evalSetDistanceMarkers() const {
-
     QString cmd = "curRoute.updateDistMarkers(curRoute.poly.getPath().getArray(), 0);";
     this->mainFrame()->evaluateJavaScript(cmd);
 }
 
 void MapPage::evalSetRouteMarkers(const QList<RouteMarker>& amarkers) const {
     for (int i=0; i<amarkers.length(); i++) {
-        QString cmd = QString("curRoute.createAndAddRouteMarker(%1,%2,%3,'%4'');").arg(i+1).arg(amarkers[i].getLatLng().x()).arg(amarkers[i].getLatLng().y()).arg(amarkers[i].getMarkerText());
+        QString cmd = QString("curRoute.createAndAddRouteMarker(%1,%2,'%3',false);").arg(amarkers[i].getLatLng().x(),0,'f',8).arg(amarkers[i].getLatLng().y(),0,'f',8).arg(amarkers[i].getMarkerText());
+        qDebug() << "route marker cmd = " << cmd;
         this->mainFrame()->evaluateJavaScript(cmd);
     }
+}
+
+void MapPage::evalSetShowRouteMarkers(bool isShow) const {
+    QString show = isShow ? "true" : "false";
+    QString cmd = QString("curRoute.showAllRouteMarkers(%1);").arg(show);
+    this->mainFrame()->evaluateJavaScript(cmd);
 }
 
 int MapPage::loadMapRoute(const MapRoute& amapRoute) const {
@@ -185,6 +191,7 @@ int MapPage::loadMapRoute(const MapRoute& amapRoute) const {
     qDebug() << "modus";
     evalSetDistanceMarkers();
     evalSetDistanceInMeter(amapRoute.getDistanceInMeter());
+    qDebug() << "routeMarkers";
     evalSetRouteMarkers(amapRoute.getRouteMarkers());
     qDebug() << "END loadMapRoute";
     return id;
@@ -334,8 +341,9 @@ void MapPage::variantToPointFList(const QVariant &aval, QList<QPointF> &pl) cons
 void MapPage::variantToRouteMarkerList(const QVariant &aval, QList<RouteMarker>& sl) const {
     /* a RouteMarker consists of:
      * 1) rank
-     * 2) lat lng
-     * 3) markertext
+     * 2) lat
+     * 3) lng
+     * 4) markertext
      **/
     QVariantList slist = aval.toList();
     for (int i=0; i<slist.size(); i++) {

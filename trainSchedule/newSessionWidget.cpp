@@ -91,7 +91,6 @@ void NewSessionWidget::saveSession() {
         Duration dur(durationSpinBox->value());
         Distance dist(distanceSpinBox->value());
 
-        qDebug() << "Distance and Duration created";
         QSharedPointer<Session> newSession;
         int sessionType;
         switch(typeCombo->currentIndex()) {
@@ -103,23 +102,18 @@ void NewSessionWidget::saveSession() {
         }
 
         newSession = QSharedPointer<Session>(new Session(sessionType, dur, dist));
-        qDebug() << "Session created";
         newSession->setName(nameLineEdit->text());
         newSession->setDescription(descriptionEdit->toPlainText());
-        qDebug() << "Session updated";
 
         mapWidget->fillMapRoute(newSession->getMapRoute());
         newSession->getMapRoute().setName(nameLineEdit->text());
-        qDebug() << "session completed";
-        qDebug() << newSession->getMapRoute().toString();
+
         daySdl->addSession(newSession);
-        qDebug() << "Session added";
+
         completeReset();
         setWindowModified(true);
-        qDebug() << "resetted";
 
         int numSession = daySdl->getNumSessions();
-        qDebug() << "numSession=" << numSession;
         sessionsWidget->showExistingSession(numSession-1);
     }
 }

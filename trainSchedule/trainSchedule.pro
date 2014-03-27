@@ -58,7 +58,8 @@ SOURCES += main.cpp \
     trainData.cpp \
     mapOptionWidget.cpp \
     mapAndOptionWidget.cpp \
-    routemarker.cpp
+    routemarker.cpp \
+    routeMarkerExportDialog.cpp
 
 HEADERS += \
     duration.h \
@@ -110,7 +111,8 @@ HEADERS += \
     trainData.h \
     mapOptionWidget.h \
     mapAndOptionWidget.h \
-    routemarker.h
+    routemarker.h \
+    routeMarkerExportDialog.h
 
 RESOURCES += \
     res.qrc

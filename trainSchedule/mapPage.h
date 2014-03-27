@@ -40,6 +40,7 @@ public slots:
     int evalGetId() const;
     QPointF evalGetCurPos() const;
     QPointF evalGetPrevPos() const;
+    QList<RouteMarker> evalGetRouteMarkers() const;
 
     // workers
     void evalUndo() const;
@@ -66,6 +67,7 @@ public slots:
     void evalSetModus(MapRoute::clickmodus) const;
     void evalSetDistanceMarkers() const;
     void evalSetRouteMarkers(const QList<RouteMarker>& amarkers) const;
+    void evalSetShowRouteMarkers(bool isShow) const;
 
 protected:
     // this is needed to enable googlemaps for webkit

@@ -8,6 +8,7 @@
 class RouteMarker
 {
 public:
+    RouteMarker(int rank, double lat, double lng, QString text);
     RouteMarker(int rank, QPointF latlng, QString text);
     RouteMarker(QXmlStreamReader& xmlReader);
 

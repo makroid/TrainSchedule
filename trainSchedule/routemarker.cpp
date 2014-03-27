@@ -8,6 +8,13 @@ RouteMarker::RouteMarker(int rank, QPointF latlng, QString text)
     this->markerText = text;
 }
 
+RouteMarker::RouteMarker(int rank, double lat, double lng, QString text)
+{
+    this->rank       = rank;
+    this->latlng     = QPointF(lat, lng);
+    this->markerText = text;
+}
+
 RouteMarker::RouteMarker(QXmlStreamReader &xmlReader) {
     xmlReader.readNext();
     while(!xmlReader.atEnd()) {

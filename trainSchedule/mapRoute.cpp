@@ -71,6 +71,10 @@ const QList<QPointF>& MapRoute::getPolyline() const {
     return polyline;
 }
 
+const QList<RouteMarker>& MapRoute::getRouteMarkers() const {
+    return routeMarkers;
+}
+
 const QList<double>& MapRoute::getHistoryDists() const {
     return distances;
 }

@@ -7,6 +7,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QCheckBox>
 
 class MapPage;
 class MapWidget;
@@ -35,6 +36,8 @@ private slots:
     void setClickModeBikerAutomatic(bool);
     void setClickModeManual(bool);
     void showExportRouteAsKmlDialog();
+    void setShowRouteMarkers(bool);
+    void showRouteMarkerExportDialog();
 
 private:
     void createWidgets();
@@ -48,6 +51,9 @@ private:
     QRadioButton *runnerRadioButton;
     QRadioButton *bikerRadioButton;
     QGroupBox *modeBox;
+    QCheckBox *routeMarkerBox;
+
+    QPushButton* routeMarkerExportButton;
     QPushButton* kmlExportButton;
 
     QVBoxLayout* layout;

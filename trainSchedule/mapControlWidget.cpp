@@ -31,7 +31,9 @@ void MapControlWidget::createWidgets() {
     runnerRadioButton->setChecked(true);
     bikerRadioButton = new QRadioButton(tr("&biker"));
     modeBox = new QGroupBox(tr("mode"));
+    routeMarkerBox = new QCheckBox("show route markers");
 
+    routeMarkerExportButton = new QPushButton(tr("export markers..."));
     kmlExportButton = new QPushButton(tr("export kml..."));
 }
 
@@ -48,8 +50,12 @@ void MapControlWidget::createLayout() {
     modeBox->setLayout(box);
 
     layout->addWidget(modeBox);
+    routeMarkerBox->setChecked(true);
+    layout->addWidget(routeMarkerBox);
+
     layout->addStretch();
 
+    layout->addWidget(routeMarkerExportButton);
     layout->addWidget(kmlExportButton);
     setLayout(layout);
 }
@@ -61,7 +67,10 @@ void MapControlWidget::createConnections() {
     connect(runnerRadioButton, SIGNAL(toggled(bool)), this, SLOT(setClickModeRunnerAutomatic(bool)));
     connect(bikerRadioButton, SIGNAL(toggled(bool)), this, SLOT(setClickModeBikerAutomatic(bool)));
     connect(manualRadioButton, SIGNAL(toggled(bool)), this, SLOT(setClickModeManual(bool)));
+    connect(routeMarkerBox, SIGNAL(toggled(bool)), this, SLOT(setShowRouteMarkers(bool)));
+    connect(routeMarkerExportButton, SIGNAL(clicked()), this, SLOT(showRouteMarkerExportDialog()));
     connect(kmlExportButton, SIGNAL(clicked()), this, SLOT(showExportRouteAsKmlDialog()));
+
 }
 
 void MapControlWidget::startNewRoute() {
@@ -115,6 +124,10 @@ void MapControlWidget::setClickModeManual (bool isManual) {
     }
 }
 
+void MapControlWidget::setShowRouteMarkers(bool isShow) {
+    mapPage->evalSetShowRouteMarkers(isShow);
+}
+
 
 void MapControlWidget::reset(bool moveToCenter) {
     currentRouteId = -1;
@@ -137,6 +150,9 @@ void MapControlWidget::forwardModeRadioButton() {
     } else {
         runnerRadioButton->setChecked(true);
     }
+}
+
+void MapControlWidget::showRouteMarkerExportDialog() {
 }
 
 void MapControlWidget::showExportRouteAsKmlDialog() {
